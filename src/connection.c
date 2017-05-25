@@ -158,11 +158,10 @@ static int _xcb_create_window(lua_State* L) {
     uint32_t mask = (uint32_t) tableGetEnum(L, 2, "mask");
     /*TODO: figure how to pass "array" (or use table as list) */
     /*uint32_t mask = (uint32_t) tableGetInt(L, 2, "mask");*/
-    uint32_t value0 = (uint32_t) tableGetEnum(L, 2, "value0");
-    uint32_t value1 = (uint32_t) tableGetEnum(L, 2, "value1");
     uint32_t values[2];
-    values[0] = value0;
-    values[1] = value1;
+    /*TODO: possible to handle enum or int (check type)?*/
+    values[0]  = (uint32_t) tableGetInt(L, 2, "value0");
+    values[1] = (uint32_t) tableGetEnum(L, 2, "value1");
     /*TODO: what to do with void cookie */
     xcb_void_cookie_t ck = xcb_create_window(conn, depth, wid, parent,
             x, y, width, height, border,
