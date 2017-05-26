@@ -21,7 +21,7 @@ int _xcb_image_text_8(lua_State* L) {
     int16_t y = (int16_t) tableGetInt(L, 2, "y");
     const char* string = tableGetString(L, 2, "text");
     int16_t len = 0;
-	if (tableIsType(L, 1, "len", LUA_TNUMBER)) {
+    if (tableIsType(L, 1, "len", LUA_TNUMBER)) {
         len = (int16_t) tableGetInt(L, 2, "len");
     } else {
         len = strlen(string);

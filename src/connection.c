@@ -111,14 +111,25 @@ static int _xcb_create_gc(lua_State* L) {
     /*TODO: check for zero*/
     xcb_gcontext_t context = (xcb_gcontext_t) tableGetInt(L, 2, "context");
     xcb_drawable_t target = (xcb_drawable_t) tableGetInt(L, 2, "target");
-    uint32_t mask = (uint32_t) tableGetEnum(L, 2, "mask");
+    uint32_t mask;
+    if (tableIsType(L, 2, "mask", LUA_TTABLE)) {
+        mask = (uint32_t) tableGetEnum(L, 2, "mask");
+    } else {
+        mask = (uint32_t) tableGetInt(L, 2, "mask");
+    }
     /*TODO: figure how to pass "array" (or use table as list) */
-    /*uint32_t mask = (uint32_t) tableGetInt(L, 2, "mask");*/
-    uint32_t value0 = (uint32_t) tableGetEnum(L, 2, "value0");
-    uint32_t value1 = (uint32_t) tableGetEnum(L, 2, "value1");
     uint32_t values[2];
-    values[0] = value0;
-    values[1] = value1;
+    if (tableIsType(L, 2, "value0", LUA_TTABLE)) {
+        values[0]  = (uint32_t) tableGetEnum(L, 2, "value0");
+    } else {
+        values[0]  = (uint32_t) tableGetInt(L, 2, "value0");
+    }
+    if (tableIsType(L, 2, "value1", LUA_TTABLE)) {
+        values[1]  = (uint32_t) tableGetEnum(L, 2, "value1");
+    } else {
+        values[1]  = (uint32_t) tableGetInt(L, 2, "value1");
+    }
+    printf("gc mask=%u, value0=%u, value1=%u\n", mask, values[0], values[1]);
     xcb_void_cookie_t ck = xcb_create_gc(conn, context, target, mask, values);
     xcb_generic_error_t * err = xcb_request_check(conn, ck);
     if (err != NULL) {
@@ -155,13 +166,24 @@ static int _xcb_create_window(lua_State* L) {
     uint16_t class = (uint16_t) tableGetInt(L, 2, "class");
     /*TODO: check for zero*/
     uint32_t visual = (uint32_t) tableGetInt(L, 2, "visual");
-    uint32_t mask = (uint32_t) tableGetEnum(L, 2, "mask");
+    uint32_t mask;
+    if (tableIsType(L, 2, "mask", LUA_TTABLE)) {
+        mask = (uint32_t) tableGetEnum(L, 2, "mask");
+    } else {
+        mask = (uint32_t) tableGetInt(L, 2, "mask");
+    }
     /*TODO: figure how to pass "array" (or use table as list) */
-    /*uint32_t mask = (uint32_t) tableGetInt(L, 2, "mask");*/
     uint32_t values[2];
-    /*TODO: possible to handle enum or int (check type)?*/
-    values[0]  = (uint32_t) tableGetInt(L, 2, "value0");
-    values[1] = (uint32_t) tableGetEnum(L, 2, "value1");
+    if (tableIsType(L, 2, "value0", LUA_TTABLE)) {
+        values[0]  = (uint32_t) tableGetEnum(L, 2, "value0");
+    } else {
+        values[0]  = (uint32_t) tableGetInt(L, 2, "value0");
+    }
+    if (tableIsType(L, 2, "value1", LUA_TTABLE)) {
+        values[1]  = (uint32_t) tableGetEnum(L, 2, "value1");
+    } else {
+        values[1]  = (uint32_t) tableGetInt(L, 2, "value1");
+    }
     /*TODO: what to do with void cookie */
     xcb_void_cookie_t ck = xcb_create_window(conn, depth, wid, parent,
             x, y, width, height, border,

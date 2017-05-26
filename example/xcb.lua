@@ -3,11 +3,10 @@ local conn = assert(XCB.xcbConnect({}))
 local screen = conn:createScreen()
 local win = screen:getRoot()
 local foreground = conn:generateId()
-local mask = { XCB.GraphicsContext.Foreground, XCB.GraphicsContext.GraphicsExposures }
 assert(conn:createGC({
   context = foreground,
   target = win,
-  mask = mask,
+  mask = { XCB.GraphicsContext.Foreground, XCB.GraphicsContext.GraphicsExposures },
   value0 = screen:getBlackPixel(),
   value1 = 0
 }))
@@ -15,7 +14,7 @@ local background = conn:generateId()
 assert(conn:createGC({
   context = background,
   target = win,
-  mask = mask,
+  mask = { XCB.GraphicsContext.Background, XCB.GraphicsContext.GraphicsExposures },
   value0 = screen:getWhitePixel(),
   value1 = 0
 }))
@@ -51,6 +50,7 @@ while true do
         y = 20,
         text = "Hello World!",
       })
+    assert(conn:flush())
   elseif (evt:getResonseType() == 0) then
     print("ERROR")
     print(evt:getErrorCode())
