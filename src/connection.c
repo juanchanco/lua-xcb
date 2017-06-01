@@ -129,7 +129,6 @@ static int _xcb_create_gc(lua_State* L) {
     } else {
         values[1]  = (uint32_t) tableGetInt(L, 2, "value1");
     }
-    printf("gc mask=%u, value0=%u, value1=%u\n", mask, values[0], values[1]);
     xcb_void_cookie_t ck = xcb_create_gc(conn, context, target, mask, values);
     xcb_generic_error_t * err = xcb_request_check(conn, ck);
     if (err != NULL) {

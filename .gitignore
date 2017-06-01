@@ -12,3 +12,4 @@ build
 *.swp
 *.so
 *.o
+*.out
