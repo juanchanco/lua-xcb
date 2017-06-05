@@ -240,7 +240,11 @@ static int _xcb_wait_for_event(lua_State* L) {
 static int _xcb_poll_for_event(lua_State* L) {
     xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
     xcb_generic_event_t* evt = xcb_poll_for_event(conn);
-    return commonPush(L, "p", EventName, evt);
+    if (evt == NULL) {
+        return commonPush(L, "n");
+    } else {
+        return commonPush(L, "p", EventName, evt);
+    }
 }
 
 static int _xcb_disconnect(lua_State* L) {

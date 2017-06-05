@@ -48,10 +48,9 @@ end
 
 local xcb_check = function(loop)
   local xcb_check_cb = function(_, _, _)
-    print("HERE I AM")
-    if(conn:hasError()) then
-      assert(nil,"ERROR")
-    end
+    --if(conn:hasError()) then
+      --assert(nil,"ERROR")
+    --end
     local evt = conn:pollForEvent()
     while (evt ~= nil) do
       if (evt:getResonseType() == XCB.EventType.Expose) then
@@ -71,7 +70,7 @@ local xcb_check = function(loop)
         print("ERROR")
         print(evt:getErrorCode())
       elseif (evt:getResonseType() == XCB.EventType.KeyPress) then
-        print("DONE")
+        loop:unloop()
       end
       evt = conn:pollForEvent()
     end
@@ -82,9 +81,8 @@ local xcb_check = function(loop)
 end
 
 local main_loop = ev.Loop.default
-print(main_loop)
 xcb_prepare(main_loop)
 local check = xcb_check(main_loop)
-print(check)
+main_loop:set_state()
 check:invoke(main_loop, 0)
 main_loop:loop()
