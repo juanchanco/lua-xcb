@@ -41,7 +41,7 @@ local xcb_prepare = function(loop)
   local xcb_prepare_cb = function(_, _, _)
     conn:flush()
   end
-  local prepare = ev.Prepare.new(xcb_prepare_cb, "wtf")
+  local prepare = ev.Prepare.new(xcb_prepare_cb)
   prepare:start(loop)
   return prepare
 end
@@ -75,12 +75,18 @@ local xcb_check = function(loop)
       evt = conn:pollForEvent()
     end
   end
-  local check = ev.Check.new(xcb_check_cb, "wtf")
+  local check = ev.Check.new(xcb_check_cb)
   check:start(loop)
   return check
 end
 
 local main_loop = ev.Loop.default
+
+local do_nothing = function () end
+local fd = conn:getFileDescriptor()
+local ev_io = ev.IO.new(do_nothing, fd, ev.READ)
+ev_io:start(main_loop)
+
 xcb_prepare(main_loop)
 local check = xcb_check(main_loop)
 main_loop:set_state()
