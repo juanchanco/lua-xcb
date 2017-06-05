@@ -230,6 +230,12 @@ static int _xcb_flush(lua_State* L) {
     return 0;
 };
 
+static int _xcb_has_error(lua_State* L) {
+    xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
+    int flag = xcb_connection_has_error(conn);
+    return commonPush(L, "b", flag);
+};
+
 /*NOTE: this is blocking*/
 static int _xcb_wait_for_event(lua_State* L) {
     xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
@@ -268,6 +274,7 @@ static const luaL_Reg methods[] = {
     { "createGC", _xcb_create_gc },
     { "mapWindow", _xcb_map_window },
     { "flush", _xcb_flush },
+    { "hasError", _xcb_has_error },
     { "waitForEvent", _xcb_wait_for_event },
     { "pollForEvent", _xcb_poll_for_event },
     { "createScreen", _xcb_create_screen },

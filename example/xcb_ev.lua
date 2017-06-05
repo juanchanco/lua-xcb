@@ -48,9 +48,9 @@ end
 
 local xcb_check = function(loop)
   local xcb_check_cb = function(_, _, _)
-    --if(conn:hasError()) then
-      --assert(nil,"ERROR")
-    --end
+    if(conn:hasError()) then
+      assert(nil,"ERROR")
+    end
     local evt = conn:pollForEvent()
     while (evt ~= nil) do
       if (evt:getResonseType() == XCB.EventType.Expose) then
