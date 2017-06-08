@@ -5,67 +5,116 @@
 #include "event.h"
 
 const CommonEnum EventType[] = {
-    { "Expose", XCB_EXPOSE },
-    { "KeyPress", XCB_KEY_PRESS },
-    { "ButtonPress", XCB_BUTTON_PRESS },
-    { "ButtonRelease", XCB_BUTTON_RELEASE },
-    { NULL, -1 }
+  { "KeyPress", XCB_KEY_PRESS },
+  { "KeyRelease", XCB_KEY_RELEASE },
+  { "ButtonPress", XCB_BUTTON_PRESS },
+  { "ButtonRelease", XCB_BUTTON_RELEASE },
+  { "MotionNotify", XCB_MOTION_NOTIFY },
+  { "EnterNotify", XCB_ENTER_NOTIFY },
+  { "LeaveNotify", XCB_LEAVE_NOTIFY },
+  { "FocusIn", XCB_FOCUS_IN },
+  { "FocusOut", XCB_FOCUS_OUT },
+  { "KeymapNotify", XCB_KEYMAP_NOTIFY },
+  { "Expose", XCB_EXPOSE },
+  { "GraphicsExposure", XCB_GRAPHICS_EXPOSURE },
+  { "NoExposure", XCB_NO_EXPOSURE },
+  { "VisibilityNotify", XCB_VISIBILITY_NOTIFY },
+  { "CreateNotify", XCB_CREATE_NOTIFY },
+  { "DestroyNotify", XCB_DESTROY_NOTIFY },
+  { "UnmapNotify", XCB_UNMAP_NOTIFY },
+  { "MapNotify", XCB_MAP_NOTIFY },
+  { "MapRequest", XCB_MAP_REQUEST },
+  { "ReparentNotify", XCB_REPARENT_NOTIFY },
+  { "ConfigureNotify", XCB_CONFIGURE_NOTIFY },
+  { "ConfigureRequest", XCB_CONFIGURE_REQUEST },
+  { "GravityNotify", XCB_GRAVITY_NOTIFY },
+  { "ResizeRequest", XCB_RESIZE_REQUEST },
+  { "CirculateNotify", XCB_CIRCULATE_NOTIFY },
+  { "CirculateRequest", XCB_CIRCULATE_REQUEST },
+  { "PropertyNotify", XCB_PROPERTY_NOTIFY },
+  { "SelectionClear", XCB_SELECTION_CLEAR },
+  { "SelectionRequest", XCB_SELECTION_REQUEST },
+  { "SelectionNotify", XCB_SELECTION_NOTIFY },
+  { "ColormapNotify", XCB_COLORMAP_NOTIFY },
+  { "ClientMessage", XCB_CLIENT_MESSAGE },
+  { "MappingNotify", XCB_MAPPING_NOTIFY },
+  /*{ "GeGeneric", XCB_GE_GENERIC },*/
+  { NULL, -1 }
 };
 const CommonEnum EventMask[] = {
-    { "Exposure", XCB_EVENT_MASK_EXPOSURE },
-    { "KeyPress", XCB_EVENT_MASK_KEY_PRESS },
-    { "ButtonPress", XCB_EVENT_MASK_BUTTON_PRESS },
-    { NULL, -1 }
+  { "NoEvent", XCB_EVENT_MASK_NO_EVENT },
+  { "KeyPress", XCB_EVENT_MASK_KEY_PRESS },
+  { "KeyRelease", XCB_EVENT_MASK_KEY_RELEASE },
+  { "ButtonPress", XCB_EVENT_MASK_BUTTON_PRESS },
+  { "ButtonRelease", XCB_EVENT_MASK_BUTTON_RELEASE },
+  { "EnterWindow", XCB_EVENT_MASK_ENTER_WINDOW },
+  { "LeaveWindow", XCB_EVENT_MASK_LEAVE_WINDOW },
+  { "PointerMotion", XCB_EVENT_MASK_POINTER_MOTION },
+  { "PointerMotionHint", XCB_EVENT_MASK_POINTER_MOTION_HINT },
+  { "Button1Motion", XCB_EVENT_MASK_BUTTON_1_MOTION },
+  { "Button2Motion", XCB_EVENT_MASK_BUTTON_2_MOTION },
+  { "Button3Motion", XCB_EVENT_MASK_BUTTON_3_MOTION },
+  { "Button4Motion", XCB_EVENT_MASK_BUTTON_4_MOTION },
+  { "Button5Motion", XCB_EVENT_MASK_BUTTON_5_MOTION },
+  { "ButtonMotion", XCB_EVENT_MASK_BUTTON_MOTION },
+  { "KeymapState", XCB_EVENT_MASK_KEYMAP_STATE },
+  { "Exposure", XCB_EVENT_MASK_EXPOSURE },
+  { "VisibilityChange", XCB_EVENT_MASK_VISIBILITY_CHANGE },
+  { "StructureNotify", XCB_EVENT_MASK_STRUCTURE_NOTIFY },
+  { "ResizeRedirect", XCB_EVENT_MASK_RESIZE_REDIRECT },
+  { "SubstructureNotify", XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY },
+  { "SubstructureRedirect", XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT },
+  { "FocusChange", XCB_EVENT_MASK_FOCUS_CHANGE },
+  { "PropertyChange", XCB_EVENT_MASK_PROPERTY_CHANGE },
+  { "ColorMapChange", XCB_EVENT_MASK_COLOR_MAP_CHANGE },
+  { "OwnerGrabButton", XCB_EVENT_MASK_OWNER_GRAB_BUTTON },
+  { NULL, -1 }
 };
-/*typedef enum xcb_event_mask_t {
-    XCB_EVENT_MASK_NO_EVENT = 0,
-    XCB_EVENT_MASK_KEY_PRESS = 1,
-    XCB_EVENT_MASK_KEY_RELEASE = 2,
-    XCB_EVENT_MASK_BUTTON_PRESS = 4,
-    XCB_EVENT_MASK_BUTTON_RELEASE = 8,
-    XCB_EVENT_MASK_ENTER_WINDOW = 16,
-    XCB_EVENT_MASK_LEAVE_WINDOW = 32,
-    XCB_EVENT_MASK_POINTER_MOTION = 64,
-    XCB_EVENT_MASK_POINTER_MOTION_HINT = 128,
-    XCB_EVENT_MASK_BUTTON_1_MOTION = 256,
-    XCB_EVENT_MASK_BUTTON_2_MOTION = 512,
-    XCB_EVENT_MASK_BUTTON_3_MOTION = 1024,
-    XCB_EVENT_MASK_BUTTON_4_MOTION = 2048,
-    XCB_EVENT_MASK_BUTTON_5_MOTION = 4096,
-    XCB_EVENT_MASK_BUTTON_MOTION = 8192,
-    XCB_EVENT_MASK_KEYMAP_STATE = 16384,
-    XCB_EVENT_MASK_EXPOSURE = 32768,
-    XCB_EVENT_MASK_VISIBILITY_CHANGE = 65536,
-    XCB_EVENT_MASK_STRUCTURE_NOTIFY = 131072,
-    XCB_EVENT_MASK_RESIZE_REDIRECT = 262144,
-    XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY = 524288,
-    XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT = 1048576,
-    XCB_EVENT_MASK_FOCUS_CHANGE = 2097152,
-    XCB_EVENT_MASK_PROPERTY_CHANGE = 4194304,
-    XCB_EVENT_MASK_COLOR_MAP_CHANGE = 8388608,
-    XCB_EVENT_MASK_OWNER_GRAB_BUTTON = 16777216
-} xcb_event_mask_t;*/
+
 
 static int _response_type(lua_State* L) {
     xcb_generic_event_t *evt = commonGetAs(L, 1, EventName, xcb_generic_event_t *);
     return commonPush(L, "i", evt->response_type & ~0x80);
 };
-static int _error_code(lua_State* L) {
-    xcb_generic_error_t *evt = commonGetAs(L, 1, EventName, xcb_generic_error_t *);
-    return commonPush(L, "i", evt->error_code);
+/*static int _detail(lua_State* L) {*/
+    /*xcb_generic_event_t *evt = commonGetAs(L, 1, EventName, xcb_generic_event_t *);*/
+    /*return commonPush(L, "i", evt->pad0);*/
+/*};*/
+static int _sequence(lua_State* L) {
+    xcb_generic_event_t *evt = commonGetAs(L, 1, EventName, xcb_generic_event_t *);
+    return commonPush(L, "i", evt->sequence);
 };
 
-/*typedef struct {
-    uint8_t   response_type;
-    uint8_t   error_code;
-    uint16_t sequence;
-    uint32_t resource_id;
-    uint16_t minor_code;
-    uint8_t major_code;
-    uint8_t pad0;
-    uint32_t pad[5];
-    uint32_t full_sequence;
-} xcb_generic_error_t;*/
+
+
+static int _expose_x(lua_State* L) {
+    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
+    return commonPush(L, "i", evt->x);
+};
+static int _expose_y(lua_State* L) {
+    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
+    return commonPush(L, "i", evt->y);
+};
+static int _expose_width(lua_State* L) {
+    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
+    return commonPush(L, "i", evt->width);
+};
+static int _expose_height(lua_State* L) {
+    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
+    return commonPush(L, "i", evt->height);
+};
+static int _expose_count(lua_State* L) {
+    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
+    return commonPush(L, "i", evt->count);
+};
+
+
+
+
+/*static int _error_code(lua_State* L) {
+    xcb_generic_error_t *evt = commonGetAs(L, 1, EventName, xcb_generic_error_t *);
+    return commonPush(L, "i", evt->error_code);
+};*/
 
 static int _free_event(lua_State* L) {
     xcb_generic_event_t *evt = commonGetAs(L, 1, EventName, xcb_generic_event_t *);
@@ -82,7 +131,8 @@ static const luaL_Reg metamethods[] = {
 /*TODO: different objects for different event types?*/
 static const luaL_Reg methods[] = {
     { "getResonseType", _response_type },
-    { "getErrorCode", _error_code },
+    { "getSequence", _sequence },
+    /*{ "getErrorCode", _error_code },*/
     { NULL, NULL }
 };
 
@@ -92,3 +142,16 @@ const CommonObject Event = {
     metamethods
 };
 
+static const luaL_Reg expose_methods[] = {
+    { "getX", _expose_x },
+    { "getY", _expose_y },
+    { "getWidth", _expose_width },
+    { "getHeight", _expose_height },
+    { "getCount", _expose_count },
+    { NULL, NULL }
+};
+const CommonObject ExposeEvent = {
+    "Event.Expose",
+    expose_methods,
+    metamethods
+};

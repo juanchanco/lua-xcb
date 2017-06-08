@@ -3,6 +3,7 @@ project(common)
 set(
 	SOURCES
 	common.c
+	xcb_common.c
 	table.c
 )
 

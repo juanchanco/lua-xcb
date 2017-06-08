@@ -5,8 +5,11 @@
 
 #include <xcb/xcb.h>
 #include "common/common.h"
+#include "common/xcb_common.h"
 #include "common/table.h"
 #include "event.h"
+#include "key_event.h"
+#include "button_event.h"
 #include "screen.h"
 #include "connection.h"
 
@@ -63,5 +66,8 @@ luaopen_XCB(lua_State *L)
     for (i = 0; objects[i].object != NULL; ++i)
         commonBindObject(L, objects[i].object);
 
+    commonExtendObject(L, &Event, &KeyEvent);
+    commonExtendObject(L, &Event, &ButtonEvent);
+    
     return 1;
 }
