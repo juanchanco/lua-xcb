@@ -25,6 +25,8 @@ set(
         src/drawing.c
         src/event.c
         src/key_event.c
+        src/button_event.c
+        src/window_event.c
         src/screen.c
         src/connection.c
 )

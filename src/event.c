@@ -87,28 +87,6 @@ static int _sequence(lua_State* L) {
 
 
 
-static int _expose_x(lua_State* L) {
-    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
-    return commonPush(L, "i", evt->x);
-};
-static int _expose_y(lua_State* L) {
-    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
-    return commonPush(L, "i", evt->y);
-};
-static int _expose_width(lua_State* L) {
-    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
-    return commonPush(L, "i", evt->width);
-};
-static int _expose_height(lua_State* L) {
-    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
-    return commonPush(L, "i", evt->height);
-};
-static int _expose_count(lua_State* L) {
-    xcb_expose_event_t *evt = commonGetAs(L, 1, EventName, xcb_expose_event_t *);
-    return commonPush(L, "i", evt->count);
-};
-
-
 
 
 /*static int _error_code(lua_State* L) {
@@ -139,19 +117,5 @@ static const luaL_Reg methods[] = {
 const CommonObject Event = {
     "Event",
     methods,
-    metamethods
-};
-
-static const luaL_Reg expose_methods[] = {
-    { "getX", _expose_x },
-    { "getY", _expose_y },
-    { "getWidth", _expose_width },
-    { "getHeight", _expose_height },
-    { "getCount", _expose_count },
-    { NULL, NULL }
-};
-const CommonObject ExposeEvent = {
-    "Event.Expose",
-    expose_methods,
     metamethods
 };
