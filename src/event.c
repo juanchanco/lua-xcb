@@ -89,10 +89,10 @@ static int _sequence(lua_State* L) {
 
 
 
-/*static int _error_code(lua_State* L) {
+static int _error_code(lua_State* L) {
     xcb_generic_error_t *evt = commonGetAsBase(L, 1, EventName, xcb_generic_error_t *);
     return commonPush(L, "i", evt->error_code);
-};*/
+};
 
 static int _free_event(lua_State* L) {
     xcb_generic_event_t *evt = commonGetAsBase(L, 1, EventName, xcb_generic_event_t *);
@@ -106,11 +106,10 @@ static const luaL_Reg metamethods[] = {
     { NULL, NULL }
 };
 
-/*TODO: different objects for different event types?*/
 static const luaL_Reg methods[] = {
     { "getResonseType", _response_type },
     { "getSequence", _sequence },
-    /*{ "getErrorCode", _error_code },*/
+    { "getErrorCode", _error_code },
     { NULL, NULL }
 };
 

@@ -65,15 +65,8 @@ static int _key_mod_any(lua_State* L) {
     return commonPush(L, "b", evt->state & XCB_MOD_MASK_ANY);
 };
 
-static int _free_event(lua_State* L) {
-    xcb_key_press_event_t *evt = commonGetAs(L, 1, KeyEventName, xcb_key_press_event_t *);
-    free(evt);
-
-    return 0;
-};
 
 static const luaL_Reg metamethods[] = {
-    { "__gc", _free_event },
     { NULL, NULL }
 };
 

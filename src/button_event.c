@@ -56,16 +56,8 @@ static int _event_y(lua_State* L) {
     return commonPush(L, "i", evt->event_y);
 };
 
-static int _free_event(lua_State* L) {
-    xcb_button_press_event_t *evt = commonGetAs(L, 1, ButtonEventName, xcb_button_press_event_t *);
-    free(evt);
-
-    return 0;
-};
-
 
 static const luaL_Reg metamethods[] = {
-    { "__gc", _free_event },
     { NULL, NULL }
 };
 
