@@ -10,6 +10,7 @@
 #include "event.h"
 #include "key_event.h"
 #include "button_event.h"
+#include "window_event.h"
 #include "screen.h"
 #include "connection.h"
 
@@ -68,6 +69,7 @@ luaopen_XCB(lua_State *L)
 
     commonExtendObject(L, &Event, &KeyEvent);
     commonExtendObject(L, &Event, &ButtonEvent);
+    commonExtendObject(L, &Event, &WindowEvent);
     
     return 1;
 }

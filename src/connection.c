@@ -3,6 +3,9 @@
 #include <xcb/xcb.h>
 #include "common/table.h"
 #include "event.h"
+#include "key_event.h"
+#include "button_event.h"
+#include "window_event.h"
 #include "screen.h"
 #include "drawing.h"
 #include "connection.h"
@@ -241,11 +244,25 @@ static int _xcb_get_file_descriptor(lua_State* L) {
     return commonPush(L, "i", fd);
 };
 
-/*NOTE: this is blocking*/
+static int POINTER_EVENT = XCB_BUTTON_PRESS | XCB_BUTTON_RELEASE | XCB_MOTION_NOTIFY | XCB_ENTER_NOTIFY | XCB_LEAVE_NOTIFY;
+static int KEY_EVENT = XCB_KEY_PRESS | XCB_KEY_RELEASE;
+static int WINDOW_EVENT = XCB_EXPOSE;
+static int push_event(lua_State* L, xcb_generic_event_t* evt) {
+    if (evt->response_type | POINTER_EVENT) {
+        return commonPush(L, "p", ButtonEventName, evt);
+    } else if (evt->response_type | KEY_EVENT) {
+        return commonPush(L, "p", KeyEventName, evt);
+    } else if (evt->response_type | WINDOW_EVENT) {
+        return commonPush(L, "p", WindowEventName, evt);
+    } else {
+        return commonPush(L, "p", EventName, evt);
+    }
+}
+
 static int _xcb_wait_for_event(lua_State* L) {
     xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
     xcb_generic_event_t* evt = xcb_wait_for_event(conn);
-    return commonPush(L, "p", EventName, evt);
+    return push_event(L, evt);
 }
 
 static int _xcb_poll_for_event(lua_State* L) {
@@ -254,7 +271,7 @@ static int _xcb_poll_for_event(lua_State* L) {
     if (evt == NULL) {
         return commonPush(L, "n");
     } else {
-        return commonPush(L, "p", EventName, evt);
+        return push_event(L, evt);
     }
 }
 

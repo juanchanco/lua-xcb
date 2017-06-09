@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <xcb/xcb.h>
 #include "common/table.h"
-/*#include "connection.h"*/
+#include "common/xcb_common.h"
 #include "event.h"
 
 const CommonEnum EventType[] = {
@@ -73,15 +73,15 @@ const CommonEnum EventMask[] = {
 
 
 static int _response_type(lua_State* L) {
-    xcb_generic_event_t *evt = commonGetAs(L, 1, EventName, xcb_generic_event_t *);
+    xcb_generic_event_t *evt = commonGetAsBase(L, 1, EventName, xcb_generic_event_t *);
     return commonPush(L, "i", evt->response_type & ~0x80);
 };
 /*static int _detail(lua_State* L) {*/
-    /*xcb_generic_event_t *evt = commonGetAs(L, 1, EventName, xcb_generic_event_t *);*/
+    /*xcb_generic_event_t *evt = commonGetAsBase(L, 1, EventName, xcb_generic_event_t *);*/
     /*return commonPush(L, "i", evt->pad0);*/
 /*};*/
 static int _sequence(lua_State* L) {
-    xcb_generic_event_t *evt = commonGetAs(L, 1, EventName, xcb_generic_event_t *);
+    xcb_generic_event_t *evt = commonGetAsBase(L, 1, EventName, xcb_generic_event_t *);
     return commonPush(L, "i", evt->sequence);
 };
 
@@ -90,12 +90,12 @@ static int _sequence(lua_State* L) {
 
 
 /*static int _error_code(lua_State* L) {
-    xcb_generic_error_t *evt = commonGetAs(L, 1, EventName, xcb_generic_error_t *);
+    xcb_generic_error_t *evt = commonGetAsBase(L, 1, EventName, xcb_generic_error_t *);
     return commonPush(L, "i", evt->error_code);
 };*/
 
 static int _free_event(lua_State* L) {
-    xcb_generic_event_t *evt = commonGetAs(L, 1, EventName, xcb_generic_event_t *);
+    xcb_generic_event_t *evt = commonGetAsBase(L, 1, EventName, xcb_generic_event_t *);
     free(evt);
 
     return 0;
