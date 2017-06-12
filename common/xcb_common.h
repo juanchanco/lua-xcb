@@ -14,6 +14,9 @@ commonGetUserdataBase(lua_State *L, int index, const char *tname);
 void
 commonExtendObject(lua_State *L, const CommonObject *base, const CommonObject *def);
 
+int
+commonPushConnectionError(lua_State *L, int error);
+
 #define commonGetAsBase(L, index, name, type)				\
 	((type)commonGetUserdataBase(L, index, name)->data)
 

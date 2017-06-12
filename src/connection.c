@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <xcb/xcb.h>
 #include "common/table.h"
+#include "common/xcb_common.h"
 #include "event.h"
 #include "key_event.h"
 #include "button_event.h"
@@ -86,8 +87,9 @@ static int _xcb_connect(lua_State* L) {
     int screenp = (uint32_t) tableGetInt(L, 1, "screenp");
     xcb_connection_t* result = xcb_connect(displayname, &screenp);
 
-    if (xcb_connection_has_error(result)) {
-        return commonPushError(L, "Some XCB error");
+    int error = xcb_connection_has_error(result);
+    if (error) {
+        return commonPushConnectionError(L, error);
     }
     return commonPush(L, "p", ConnectionName, result);
 }
@@ -222,11 +224,14 @@ static int _xcb_flush(lua_State* L) {
     xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
     int i = xcb_flush(conn);
     if (i <= 0) {
-        char * fmt = "Some XCB error. Code: %i";
-        char msg[strlen(fmt)];
-        fprintf(stderr, "Some XCB error. Code: %i\n", i);
-        sprintf(msg, fmt, i);
-        return commonPushError(L, msg);
+        // TODO: figure out string memory allocation passing string 
+        // back to lua
+        /*char * fmt = "Some XCB error. Code: %i";*/
+        /*char msg[strlen(fmt)];*/
+        /*fprintf(stderr, "Some XCB error. Code: %i\n", i);*/
+        /*sprintf(msg, fmt, i);*/
+
+        return commonPushError(L, "Flush Error");
     } else {
         return commonPush(L, "b", 1);
     }
@@ -237,6 +242,14 @@ static int _xcb_has_error(lua_State* L) {
     xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
     int flag = xcb_connection_has_error(conn);
     return commonPush(L, "b", flag);
+};
+static int _xcb_check_error(lua_State* L) {
+    xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
+    int error = xcb_connection_has_error(conn);
+    if (error) {
+        return commonPushConnectionError(L, error);
+    }
+    return commonPush(L, "b", 1);
 };
 static int _xcb_get_file_descriptor(lua_State* L) {
     xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
@@ -297,6 +310,7 @@ static const luaL_Reg methods[] = {
     { "mapWindow", _xcb_map_window },
     { "flush", _xcb_flush },
     { "hasError", _xcb_has_error },
+    { "checkError", _xcb_check_error },
     { "getFileDescriptor", _xcb_get_file_descriptor },
     { "waitForEvent", _xcb_wait_for_event },
     { "pollForEvent", _xcb_poll_for_event },

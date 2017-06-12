@@ -37,9 +37,7 @@ assert(conn:mapWindow(main))
 assert(conn:flush())
 
 while true do
-  if(conn:hasError()) then
-    assert(nil,"ERROR")
-  end
+  assert(conn:checkError())
   local evt = conn:waitForEvent()
   if (evt:getResonseType() == XCB.EventType.Expose) then
     conn:polyRectangle({
