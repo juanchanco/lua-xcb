@@ -28,6 +28,7 @@ set(
         src/button_event.c
         src/window_event.c
         src/screen.c
+        src/visual.c
         src/connection.c
 )
 
