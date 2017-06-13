@@ -24,6 +24,7 @@ set(
         src/xcb.c
         src/drawing.c
         src/connection.c
+        src/event.c
         src/screen.c
 )
 
