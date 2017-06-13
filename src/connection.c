@@ -355,7 +355,7 @@ static const luaL_Reg metamethods[] = {
 };
 
 const CommonObject Connection = {
-    "Connection",
+    "XCB.Connection",
     methods,
     metamethods
 };

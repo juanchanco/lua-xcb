@@ -114,7 +114,7 @@ static const luaL_Reg methods[] = {
 };
 
 const CommonObject Event = {
-    "Event",
+    "XCB.Event",
     methods,
     metamethods
 };

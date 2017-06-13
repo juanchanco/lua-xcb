@@ -3,7 +3,6 @@
 
 #include <common/common.h>
 
-#define VisualName	Visual.name
 #define ConnectionName	Connection.name
 
 extern const luaL_Reg ConnectionFunctions[];

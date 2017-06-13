@@ -96,26 +96,26 @@ static const luaL_Reg metamethods[] = {
 };
 
 static const luaL_Reg methods[] = {
-    { "root", _root },
-    { "whitePixel", _white_pixel },
-    { "blackPixel", _black_pixel },
-    { "currentInputMasks", _current_input_masks },
-    { "widthInPixels", _width_in_pixels },
-    { "heightInPixels", _height_in_pixels },
-    { "widthInMillimeters", _width_in_millimeters },
-    { "heightInMillimeters", _height_in_millimeters },
-    { "minInstalledMaps", _min_installed_maps },
-    { "maxInstalledMaps", _max_installed_maps },
-    { "rootVisual", _root_visual },
-    { "backingStores", _backing_stores },
-    { "saveUnders", _save_unders },
-    { "rootDepth", _root_depth },
-    { "allowedDepthsLen", _allowed_depths_len },
+    { "getRoot", _root },
+    { "getWhitePixel", _white_pixel },
+    { "getBlackPixel", _black_pixel },
+    { "getCurrentInputMasks", _current_input_masks },
+    { "getWidthInPixels", _width_in_pixels },
+    { "getHeightInPixels", _height_in_pixels },
+    { "getWidthInMillimeters", _width_in_millimeters },
+    { "getHeightInMillimeters", _height_in_millimeters },
+    { "getMinInstalledMaps", _min_installed_maps },
+    { "getMaxInstalledMaps", _max_installed_maps },
+    { "getRootVisual", _root_visual },
+    { "getBackingStores", _backing_stores },
+    { "getSaveUnders", _save_unders },
+    { "getRootDepth", _root_depth },
+    { "getAllowedDepthsLen", _allowed_depths_len },
     { NULL, NULL }
 };
 
 const CommonObject Screen = {
-    "Screen",
+    "XCB.Screen",
     methods,
     metamethods
 };

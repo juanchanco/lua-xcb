@@ -13,7 +13,7 @@ static const luaL_Reg methods[] = {
 };
 
 const CommonObject Visual = {
-    "Visual",
+    "XCB.Visual",
     methods,
     metamethods
 };

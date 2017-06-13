@@ -40,7 +40,7 @@ static const luaL_Reg methods[] = {
 };
 
 const CommonObject WindowEvent = {
-    "Event.Window",
+    "XCB.Event.Window",
     methods,
     metamethods
 };
