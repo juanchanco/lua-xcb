@@ -51,7 +51,7 @@ local xcb_check = function(loop)
     assert(conn:checkError())
     local evt = conn:pollForEvent()
     while (evt ~= nil) do
-      if (evt:getResonseType() == XCB.EventType.Expose) then
+      if (evt.response_type == XCB.EventType.Expose) then
         conn:polyRectangle({
             target = main,
             context = foreground,
@@ -64,10 +64,10 @@ local xcb_check = function(loop)
             text = "Hello World!",
           })
         assert(conn:flush())
-      elseif (evt:getResonseType() == 0) then
+      elseif (evt.response_type == 0) then
         print("ERROR")
-        print(evt:getErrorCode())
-      elseif (evt:getResonseType() == XCB.EventType.KeyPress) then
+        print(evt.error_code)
+      elseif (evt.response_type == XCB.EventType.KeyPress) then
         loop:unloop()
       end
       evt = conn:pollForEvent()

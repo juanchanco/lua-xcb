@@ -16,4 +16,7 @@ extern const CommonEnum CW[];
 extern const CommonEnum Defines[];
 extern const CommonEnum GC[];
 
+extern const CommonEnum EventType[];
+extern const CommonEnum EventMask[];
+
 #endif /* !_CONNECTION_ */

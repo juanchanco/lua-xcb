@@ -7,10 +7,6 @@
 #include "common/common.h"
 #include "common/xcb_common.h"
 #include "common/table.h"
-#include "event.h"
-#include "key_event.h"
-#include "button_event.h"
-#include "window_event.h"
 #include "screen.h"
 #include "connection.h"
 
@@ -45,7 +41,6 @@ static const struct {
 } objects[] = {
     { &Connection },
     { &Visual },
-    { &Event },
     { &Screen },
     { NULL }
 };
@@ -67,9 +62,5 @@ luaopen_XCB(lua_State *L)
     for (i = 0; objects[i].object != NULL; ++i)
         commonBindObject(L, objects[i].object);
 
-    commonExtendObject(L, &Event, &KeyEvent);
-    commonExtendObject(L, &Event, &ButtonEvent);
-    commonExtendObject(L, &Event, &WindowEvent);
-    
     return 1;
 }
