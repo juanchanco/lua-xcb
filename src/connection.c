@@ -4,7 +4,6 @@
 #include "common/table.h"
 #include "common/xcb_common.h"
 #include "screen.h"
-#include "visual.h"
 #include "drawing.h"
 #include "connection.h"
 
@@ -203,14 +202,10 @@ static int _xcb_connect(lua_State* L) {
 }
 
 static int _xcb_create_screen(lua_State* L) {
-    /*TODO: unwrap the two calls*/
     xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
-    /*TODO: malloc and copy this?*/
     xcb_screen_t *screen = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
-    /*xcb_screen_t *cpy = malloc(sizeof(xcb_screen_t));*/
-    /*memcpy(screen,cpy,sizeof(xcb_screen_t));*/
-
-    return commonPush(L, "p", ScreenName, screen);
+    pushScreen(L, screen);
+    return 1;
 }
 static int _xcb_generate_id(lua_State* L) {
     xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
@@ -402,32 +397,6 @@ static int _xcb_poll_for_event(lua_State* L) {
     }
 }
 
-static xcb_visualtype_t *find_visual(xcb_connection_t *c, xcb_visualid_t visual) {
-    xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(xcb_get_setup(c));
-
-    for (; screen_iter.rem; xcb_screen_next(&screen_iter)) {
-        xcb_depth_iterator_t depth_iter = xcb_screen_allowed_depths_iterator(screen_iter.data);
-        for (; depth_iter.rem; xcb_depth_next(&depth_iter)) {
-            xcb_visualtype_iterator_t visual_iter = xcb_depth_visuals_iterator(depth_iter.data);
-            for (; visual_iter.rem; xcb_visualtype_next(&visual_iter))
-                if (visual == visual_iter.data->visual_id)
-                    return visual_iter.data;
-        }
-    }
-
-    return NULL;
-}
-
-static int _find_visual(lua_State* L) {
-    xcb_connection_t *conn = commonGetAs(L, 1, ConnectionName, xcb_connection_t *);
-    xcb_screen_t *screen = commonGetAs(L, 2, ScreenName, xcb_screen_t *);
-    xcb_visualtype_t* result = find_visual(conn, screen->root_visual);
-    if (!result) {
-        return commonPushError(L, "find_visual failed");
-    }
-    return commonPush(L, "p", VisualName, result);
-};
-
 static int _xcb_disconnect(lua_State* L) {
     printf("GC: xcb_disconnect\n");
     CommonUserdata *conn = commonGetUserdata(L, 1, ConnectionName);
@@ -455,7 +424,6 @@ static const luaL_Reg methods[] = {
     { "waitForEvent", _xcb_wait_for_event },
     { "pollForEvent", _xcb_poll_for_event },
     { "createScreen", _xcb_create_screen },
-    { "findVisual", _find_visual },
     /* drawing */
     { "imageText8", _xcb_image_text_8 },
     { "polyRectangle", _xcb_poly_rectangle },

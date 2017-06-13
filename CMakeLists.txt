@@ -23,9 +23,8 @@ set(
 	SOURCES
         src/xcb.c
         src/drawing.c
-        src/screen.c
-        src/visual.c
         src/connection.c
+        src/screen.c
 )
 
 configure_file(

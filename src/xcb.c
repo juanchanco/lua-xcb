@@ -40,8 +40,6 @@ static const struct {
 	const CommonObject *object;
 } objects[] = {
     { &Connection },
-    { &Visual },
-    { &Screen },
     { NULL }
 };
 

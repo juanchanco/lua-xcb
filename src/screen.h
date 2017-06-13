@@ -1,13 +1,7 @@
 #ifndef _SCREEN_
 #define _SCREEN_
 
-#include <common/common.h>
-
-#define ScreenName	Screen.name
-
-extern const luaL_Reg ScreenFunctions[];
-
-extern const CommonObject Screen;
+extern void pushScreen(lua_State *L, const xcb_screen_t *screen);
 
 #endif /* !_SCREEN_ */
 

@@ -2,13 +2,13 @@ local ev = require'ev'
 local XCB = require("XCB")
 local conn = assert(XCB.xcbConnect({}))
 local screen = conn:createScreen()
-local win = screen:getRoot()
+local win = screen.root
 local foreground = conn:generateId()
 assert(conn:createGC({
   context = foreground,
   target = win,
   mask = { XCB.GraphicsContext.Foreground, XCB.GraphicsContext.GraphicsExposures },
-  value0 = screen:getBlackPixel(),
+  value0 = screen.black_pixel,
   value1 = 0
 }))
 local background = conn:generateId()
@@ -16,22 +16,22 @@ assert(conn:createGC({
   context = background,
   target = win,
   mask = { XCB.GraphicsContext.Background, XCB.GraphicsContext.GraphicsExposures },
-  value0 = screen:getWhitePixel(),
+  value0 = screen.white_pixel,
   value1 = 0
 }))
 local main = conn:generateId()
 assert(conn:createWindow({
   window = main,
-  parent = screen:getRoot(),
+  parent = screen.root,
   x = 0,
   y = 0,
   width = 150,
   height = 150,
   border = 10,
   class = XCB.WindowClass.InputOutput,
-  visual = screen:getRootVisual(),
+  visual = screen.root_visual,
   mask = { XCB.CW.BackPixel, XCB.CW.EventMask },
-  value0 = screen:getWhitePixel(),
+  value0 = screen.white_pixel,
   value1 = { XCB.EventMask.Exposure, XCB.EventMask.KeyPress }
 }))
 assert(conn:mapWindow(main))
