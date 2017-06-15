@@ -13,3 +13,4 @@ build
 *.so
 *.o
 *.out
+ng/*.c
