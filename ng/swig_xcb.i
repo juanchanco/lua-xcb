@@ -57,5 +57,5 @@
 %include <carrays.i>
 %array_functions(uint32_t, values)
 /*%include "xcb.hh"*/
-%include "/usr/X11R7/include/xcb/xcb.h"
-%include "/usr/X11R7/include/xcb/xproto.h"
+%include "xcb/xcb.h"
+%include "xcb/xproto.h"
