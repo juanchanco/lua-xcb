@@ -30,7 +30,7 @@
 %typemap(out) int8_t {
   lua_pushinteger(L, (int) $1); SWIG_arg++;
 }
-%typemap(out) intresult6_t {
+%typemap(out) uint16_t {
   lua_pushinteger(L, (int) $1); SWIG_arg++;
 }
 %typemap(out) int32_t {
@@ -39,7 +39,7 @@
 %typemap(out) uint8_t {
   lua_pushinteger(L, (int) $1); SWIG_arg++;
 }
-%typemap(out) uintresult6_t {
+%typemap(out) uint16_t {
   lua_pushinteger(L, (int) $1); SWIG_arg++;
 }
 %typemap(out) uint32_t {
