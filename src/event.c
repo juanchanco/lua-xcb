@@ -75,7 +75,7 @@ const CommonEnum EventMask[] = {
 
 void pushEvent(lua_State *L, const xcb_generic_event_t *evt)
 {
-	lua_createtable(L, 0, 0);
+    lua_createtable(L, 0, 0);
     tableSetInt(L, -1, "response_type", evt->response_type);
     tableSetInt(L, -1, "sequence", evt->sequence);
 }

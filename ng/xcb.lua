@@ -1,15 +1,51 @@
 local xcb = require("swig_xcb")
 
 --for k,v in pairs(xcb) do
---for k,v in pairs(getmetatable(xcb.xcb_screen_t)) do
-  --local m = getmetatable(xcb.xcb_key_press_event_t)
-  --if (m.__gc) then
-    --print(k)
+  --local mt = getmetatable(v)
+  --if (mt) then
+    --print(string.format("%s = %s", k, v))
+    --for x,y in pairs(mt) do
+      --print(string.format("  %s = %s", x, y))
+    --end
   --end
-  --print(string.format("%s = %s", k, v))
 --end
 local c = xcb.xcb_connect(nil, 0)
-print(c)
+local e = xcb.xcb_connection_has_error(c)
+local screen = xcb.xcb_setup_roots_iterator(xcb.xcb_get_setup(c)).data
+local win = screen.root
+local foreground = xcb.xcb_generate_id (c)
+local mask = xcb.XCB_GC_FOREGROUND | xcb.XCB_GC_GRAPHICS_EXPOSURES
+local values = xcb.new_values(2)
+xcb.values_setitem(values, 0, screen.black_pixel)
+xcb.values_setitem(values, 1, 0)
+xcb.xcb_create_gc (c, foreground, win, mask, values)
+
+local background = xcb.xcb_generate_id (c)
+mask = xcb.XCB_GC_BACKGROUND | xcb.XCB_GC_GRAPHICS_EXPOSURES
+xcb.values_setitem(values, 0, screen.white_pixel)
+xcb.values_setitem(values, 1, 0)
+xcb.xcb_create_gc (c, background, win, mask, values)
+
+xcb.delete_values(values)
+xcb.xcb_disconnect(c)
+
+win = xcb.xcb_generate_id (c)
+mask = xcb.XCB_CW_BACK_PIXEL | xcb.XCB_CW_EVENT_MASK
+xcb.values_setitem(values, 1, xcb.XCB_EVENT_MASK_EXPOSURE | xcb.XCB_EVENT_MASK_KEY_PRESS)
+
+xcb.xcb_create_window (c, xcb.XCB_COPY_FROM_PARENT,
+                     win,
+                     screen.root,
+                     0, 0,
+                     150, 150,
+                     10,
+                     xcb.XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                     screen.root_visual,
+                     mask, values)
+ 
+xcb.xcb_map_window (c, win)
+xcb.xcb_flush (c);
+--print(c)
 local ConnectionError = {
     Error = xcb.XCB_CONN_ERROR,
     ClosedExtNotsupported = xcb.XCB_CONN_CLOSED_EXT_NOTSUPPORTED,
