@@ -9,6 +9,13 @@ local xcb = require("swig_xcb")
     --end
   --end
 --end
+local r = xcb.xcb_rectangle_t()
+r.x = 40
+r.y = 40
+r.width = 20
+r.height = 20
+local rectangles = xcb.new_rectangles(1)
+xcb.rectangles_setitem(rectangles, 0, r)
 local c = xcb.xcb_connect(nil, 0)
 local e = xcb.xcb_connection_has_error(c)
 local screen = xcb.xcb_setup_roots_iterator(xcb.xcb_get_setup(c)).data
@@ -44,18 +51,22 @@ xcb.xcb_create_window (c, xcb.XCB_COPY_FROM_PARENT,
  
 xcb.xcb_map_window (c, win)
 xcb.xcb_flush (c);
+local string = "Hello, XCB!"
+local string_len = #string
 local e = xcb.xcb_wait_for_event(c)
 while (e) do
-  print(e.response_type)
-  local response_type = e.response_type | 0x7f
+  --local response_type = e.response_type | 0x7f
+  local response_type = e.response_type
+  --print(e.response_type)
   if (response_type == xcb.XCB_EXPOSE) then
+  print("xcb.XCB_EXPOSE")
     xcb.xcb_poly_rectangle (c, win, foreground, 1, rectangles)
     xcb.xcb_image_text_8 (c, string_len, win, background, 20, 20, string)
     xcb.xcb_flush (c)
   elseif (response_type == xcb.XCB_KEY_PRESS) then
+  print("xcb.XCB_KEY_PRESS")
     break
   end
-  --for k,v in pairs(getmetatable(e)) do
-    --print(string.format("%s = %s", k, v))
+  e = xcb.xcb_wait_for_event(c)
 end
 xcb.xcb_disconnect(c)

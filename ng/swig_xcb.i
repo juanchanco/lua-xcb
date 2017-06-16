@@ -54,8 +54,11 @@
   lua_pushinteger(L, (int) $1); SWIG_arg++;
 }
 /*%apply uint32_t* INPUT {uint32_t *value_list};*/
+/*%apply (xcb_rectangle_t *INPUT, int) {(xcb_rectangle_t* rectangles, int len)};*/
+/*%apply xcb_rectangle_t* INPUT {xcb_rectangle_t* rectangles};*/
 %include <carrays.i>
 %array_functions(uint32_t, values)
+%array_functions(xcb_rectangle_t, rectangles)
 /*%include "xcb.hh"*/
 %include "xcb/xcb.h"
 %include "xcb/xproto.h"
