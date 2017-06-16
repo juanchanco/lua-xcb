@@ -1,0 +1,32 @@
+%module swig_freetype
+%{
+ #include <ft2build.h>
+ #include FT_FREETYPE_H
+%}
+#define __attribute__(x)
+#define __asm(x)
+#define __inline
+#define __restrict
+#define __extension__
+%include <typemaps.i>
+%ignore vfprintf;
+%ignore vprintf;
+%ignore vsprintf;
+%ignore vsnprintf;
+%ignore vfscanf;
+%ignore vscanf;
+%ignore vsscanf;
+%ignore vsnscanf;
+%ignore vasprintf;
+%ignore vdprintf;
+%ignore vfprintf_l;
+%ignore vprintf_l;
+%ignore vasprintf_l;
+%ignore vdprintf_l;
+%ignore vsnprintf_l;
+%ignore vsprintf_l;
+%ignore vscanf_l;
+%ignore vfscanf_l;
+%ignore vsscanf_l;
+%ignore vsnprintf_ss;
+%include "freetype.hh";
