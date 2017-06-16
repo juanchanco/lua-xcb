@@ -27,7 +27,6 @@ xcb.values_setitem(values, 1, 0)
 xcb.xcb_create_gc (c, background, win, mask, values)
 
 xcb.delete_values(values)
-xcb.xcb_disconnect(c)
 
 win = xcb.xcb_generate_id (c)
 mask = xcb.XCB_CW_BACK_PIXEL | xcb.XCB_CW_EVENT_MASK
@@ -45,6 +44,14 @@ xcb.xcb_create_window (c, xcb.XCB_COPY_FROM_PARENT,
  
 xcb.xcb_map_window (c, win)
 xcb.xcb_flush (c);
+local e = xcb.xcb_wait_for_event(c)
+--while (e) do
+  print(e.response_type)
+
+for k,v in pairs(getmetatable(e)) do
+  --print(string.format("%s = %s", k, v))
+end
+xcb.xcb_disconnect(c)
 --print(c)
 local ConnectionError = {
     Error = xcb.XCB_CONN_ERROR,

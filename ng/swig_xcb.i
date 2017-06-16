@@ -27,6 +27,24 @@
 %typemap(in) uint32_t {
   $1 = (uint32_t) lua_tointeger(L, $input);
 }
+%typemap(out) int8_t {
+  lua_pushinteger(L, (int) $1); SWIG_arg++;
+}
+%typemap(out) intresult6_t {
+  lua_pushinteger(L, (int) $1); SWIG_arg++;
+}
+%typemap(out) int32_t {
+  lua_pushinteger(L, (int) $1); SWIG_arg++;
+}
+%typemap(out) uint8_t {
+  lua_pushinteger(L, (int) $1); SWIG_arg++;
+}
+%typemap(out) uintresult6_t {
+  lua_pushinteger(L, (int) $1); SWIG_arg++;
+}
+%typemap(out) uint32_t {
+  lua_pushinteger(L, (int) $1); SWIG_arg++;
+}
 /*%apply uint32_t* INPUT {uint32_t *value_list};*/
 %include <carrays.i>
 %array_functions(uint32_t, values)
