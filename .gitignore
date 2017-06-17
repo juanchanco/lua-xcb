@@ -13,4 +13,4 @@ build
 *.so
 *.o
 *.out
-ng/*.c
+swig/**/*.c
