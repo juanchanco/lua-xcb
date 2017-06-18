@@ -20,3 +20,14 @@ for k,v in pairs(hb_ft) do
     end
   end
 end
+print("================================================")
+local hb_glib = require("swig_hb_glib")
+for k,v in pairs(hb_glib) do
+  print(string.format("%s = %s", k, v))
+  local mt = getmetatable(v)
+  if (mt) then
+    for x,y in pairs(mt) do
+      print(string.format("  %s = %s", x, y))
+    end
+  end
+end
