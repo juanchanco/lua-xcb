@@ -55,13 +55,15 @@ for i = 0, (glyph_count-1) do
   local position = hb.get_glyph_position(glyph_positions, i)
   local info = hb.get_glyph_info(glyph_infos, i)
 
-  string_width_in_pixels = string_width_in_pixels + position.x_advance/64;
+  string_width_in_pixels = string_width_in_pixels + (math.tointeger(position.x_advance)/64);
   
   cairo_glyph.index = info.codepoint
-  cairo_glyph.x = x + (position.x_offset/64)
-  cairo_glyph.y = y - (position.y_offset/64)
-  x = x + position.x_advance/64
-  y = y - position.y_advance/64
+  --TODO: what is the /64 about? it isn't working
+  --TODO: fix types in swig to avoid cast
+  cairo_glyph.x = x + (math.tointeger(position.x_offset))
+  cairo_glyph.y = y + (math.tointeger(position.y_offset))
+  x = x + (math.tointeger(position.x_advance))
+  y = y + (math.tointeger(position.y_advance))
   cairo.glyphs_setitem(cairo_glyphs, i, cairo_glyph)
 end
 
