@@ -23,8 +23,8 @@ local code,ft_library = ft.FT_Init_FreeType()
 local ptSize      = 20.0;
 local device_hdpi = 100;
 local device_vdpi = 100;
-local width      = 800;
-local height     = 600;
+local width      = 500;
+local height     = 500;
 
 local texts = {
   en = {
@@ -42,7 +42,7 @@ local texts = {
   ch = {
     text = "這是一些中文",
     font = "fonts/fireflysung-1.3.0/fireflysung.ttf",
-    direction = hb.HB_DIRECTION_LTR,
+    direction = hb.HB_DIRECTION_TTB,
     script = hb.HB_SCRIPT_HAN
   }
 }
@@ -69,7 +69,6 @@ function createBuffer(ln, spec)
 end
 
 function render(ln, spec, x, y)
-  print(string.format("%s -> %i/%i", ln, x, y))
   print(spec.text)
   local buf = createBuffer(ln, spec)
   hb.hb_buffer_add_utf8(buf, spec.text, #(spec.text), 0, #(spec.text))
@@ -85,7 +84,8 @@ function render(ln, spec, x, y)
 
   if (ln == "en") then x = 20 end
   if (ln == "ar")  then x = width - string_width_in_pixels - 20 end
-  if (ln == "ch") then x = width/2 - string_width_in_pixels/2 end
+  if (ln == "ch") then x = width//2 - string_width_in_pixels/2 end
+  print(string.format("%s -> %i/%i => %i", ln, x, y, string_width_in_pixels))
   local cairo_glyphs = cairo.new_glyphs(glyph_count)
   for i = 0, (glyph_count-1) do
     local cairo_glyph = cairo.cairo_glyph_t()
@@ -95,8 +95,9 @@ function render(ln, spec, x, y)
     cairo_glyph.x = x + ((position.x_offset)//64)
     cairo_glyph.y = y + ((position.y_offset)//64)
     x = x + ((position.x_advance)//64)
-    y = y + ((position.y_advance)//64)
+    y = y - ((position.y_advance)//64)
     cairo.glyphs_setitem(cairo_glyphs, i, cairo_glyph)
+  --print(string.format("  %s -> %i/%i", ln, x, y))
   end
   hb.hb_buffer_destroy(buf)
   getmetatable(cairo_glyphs)["__len"] = function(self) return glyph_count end
@@ -154,11 +155,6 @@ while (e) do
     renderToCairo(cr, surface, "ar", texts.ar, x, y)
     y = y + math.tointeger(ptSize * 2)
     renderToCairo(cr, surface, "ch", texts.ch, x, y)
-    --cairo.cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1.0);
-    --cairo.cairo_set_font_face(cr, cairo_ft_face);
-    --cairo.cairo_set_font_size(cr, ptSize);
-    --cairo.cairo_show_glyphs(cr, cairo_glyphs, glyph_count);
-    --cairo.cairo_surface_flush(surface)
     xcb.xcb_flush(conn)
   elseif (response_type == xcb.XCB_KEY_PRESS) then
     break
