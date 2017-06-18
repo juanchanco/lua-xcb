@@ -62,6 +62,7 @@ for i = 0, (glyph_count-1) do
   cairo_glyph.y = y - (position.y_offset/64)
   x = x + position.x_advance/64
   y = y - position.y_advance/64
+  cairo.glyphs_setitem(cairo_glyphs, i, cairo_glyph)
 end
 
 
