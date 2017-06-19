@@ -50,13 +50,14 @@ local texts = {
 function loadFonts(spec)
   local code,ft_face = ft.FT_New_Face(ft_library, spec.font, 0)
   ft.FT_Set_Char_Size(ft_face, 0, ptSize*64.0, device_hdpi, device_vdpi )
-  local hb_ft_font = hb_ft.hb_ft_font_create_referenced(ft_face)
-  local hb_ft_face = hb_ft.hb_ft_face_create_referenced(ft_face)
+  local hb_ft_font = hb_ft.hb_ft_font_create_null_func(ft_face)
+  local hb_ft_face = hb_ft.hb_ft_face_create_null_func(ft_face)
   local cairo_ft_face = cairo_ft.cairo_ft_font_face_create_for_ft_face(ft_face, 0)
+  local status = cairo.cairo_font_face_status(cairo_ft_face)
   spec.ft_face = ft_face
   spec.hb_ft_font = hb_ft_font
   spec.hb_ft_face = hb_ft_face
-  spec.cario_ft_face = cario_ft_face
+  spec.cairo_ft_face = cairo_ft_face
 end
 function createBuffer(ln, spec)
   local buf = hb.hb_buffer_create()
