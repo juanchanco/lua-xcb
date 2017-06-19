@@ -7,10 +7,10 @@ local cairo_xcb = require("swig_cairo_xcb")
 local cairo_ft = require("swig_cairo_ft")
 local xcb = require("swig_xcb")
 
-local mt = getmetatable(ft.FT_FaceRec)
-mt[".instance"]["__gc"] = function(_) print("GC!") end
+local FT_FaceRec_mt = getmetatable(ft.FT_FaceRec)
+FT_FaceRec_mt[".instance"]["__gc"] = function(_) print("GC!") end
 
-local code,ft_library = ft.FT_Init_FreeType()
+local _,ft_library = ft.FT_Init_FreeType()
 local ptSize      = 20.0;
 local device_hdpi = 100;
 local device_vdpi = 100;
@@ -38,24 +38,24 @@ local texts = {
   }
 }
 
-function loadFonts(spec)
-  local code,ft_face = ft.FT_New_Face(ft_library, spec.font, 0)
+local loadFonts = function(spec)
+  local _,ft_face = ft.FT_New_Face(ft_library, spec.font, 0)
   ft.FT_Set_Char_Size(ft_face, 0, ptSize*64.0, device_hdpi, device_vdpi )
   local hb_ft_font = hb_ft.hb_ft_font_create_null_func(ft_face)
   local hb_ft_face = hb_ft.hb_ft_face_create_null_func(ft_face)
   local cairo_ft_face = cairo_ft.cairo_ft_font_face_create_for_ft_face(ft_face, 0)
-  local status = cairo.cairo_font_face_status(cairo_ft_face)
+  local _ = cairo.cairo_font_face_status(cairo_ft_face)
   spec.ft_face = ft_face
   spec.hb_ft_font = hb_ft_font
   spec.hb_ft_face = hb_ft_face
   spec.cairo_ft_face = cairo_ft_face
 end
-function createBuffer(ln, spec)
+local createBuffer = function(ln, spec)
   local buf = hb.hb_buffer_create()
   local mt = {}
   mt["__gc"] = function(self) print("DESTROY!"); hb.hb_buffer_destroy(self) end
   mt["__len"] = function(self) return hb.hb_buffer_get_length(self) end
-  mt["__tostring"] = function(self) return "Harfbuzz Buffer" end
+  mt["__tostring"] = function(_) return "Harfbuzz Buffer" end
   ft.setmetatable(buf, mt)
   hb.hb_buffer_set_unicode_funcs(buf, hb_glib.hb_glib_get_unicode_funcs())
   hb.hb_buffer_set_direction(buf, spec.direction);
@@ -64,7 +64,7 @@ function createBuffer(ln, spec)
   return buf
 end
 
-function render(ln, spec, x, y)
+local render = function(ln, spec, x, y)
   print(spec.text)
   local buf = createBuffer(ln, spec)
   hb.hb_buffer_add_utf8(buf, spec.text, #(spec.text), 0, #(spec.text))
@@ -93,11 +93,11 @@ function render(ln, spec, x, y)
     y = y - ((position.y_advance)//64)
     cairo.glyphs_setitem(cairo_glyphs, i, cairo_glyph)
   end
-  getmetatable(cairo_glyphs)["__len"] = function(self) return glyph_count end
+  getmetatable(cairo_glyphs)["__len"] = function(_) return glyph_count end
   return cairo_glyphs
 end
 
-function renderToCairo(cr, surface, ln, spec, x, y)
+local renderToCairo = function(cr, surface, ln, spec, x, y)
   print(string.format("HERE %s", ln))
   local glyphs = render(ln, spec, x, y)
   cairo.cairo_set_font_face(cr, spec.cairo_ft_face);
