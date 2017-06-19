@@ -134,8 +134,7 @@ xcb.xcb_flush(conn)
 for _,spec in pairs(texts) do
   loadFonts(spec)
 end
-cairo.cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1.0);
-cairo.cairo_set_font_size(cr, ptSize);
+cairo.cairo_set_font_size(cr, ptSize)
 
 
 local e = xcb.xcb_wait_for_event(conn)
@@ -144,6 +143,9 @@ while (e) do
   if (response_type == xcb.XCB_EXPOSE) then
     local x = 20
     local y = 50
+    cairo.cairo_set_source_rgb (cr, 0.0, 0.0, 0.0)
+    cairo.cairo_paint(cr)
+    cairo.cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1.0)
     renderToCairo(cr, surface, "en", texts.en, x, y)
     y = y + math.tointeger(ptSize * 2)
     renderToCairo(cr, surface, "ar", texts.ar, x, y)
