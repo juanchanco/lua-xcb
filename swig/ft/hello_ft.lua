@@ -80,6 +80,8 @@ local render = function(ln, spec, x, y)
 
   if (ln == "en") then x = 20 end
   if (ln == "ar")  then x = width - string_width_in_pixels - 20 end
+  print("HERE")
+  print(x)
   if (ln == "ch") then x = width//2 - string_width_in_pixels/2 end
   local cairo_glyphs = cairo.new_glyphs(glyph_count)
   for i = 0, (glyph_count-1) do
@@ -126,23 +128,25 @@ xcb.xcb_map_window(conn, wid)
 xcb.xcb_flush(conn)
 
 local visual = xcb.find_visual(conn, screen.root_visual)
-local surface = cairo_xcb.cairo_xcb_surface_create(conn, wid, visual, width, height)
-local cr = cairo.cairo_create(surface)
 xcb.xcb_flush(conn)
 
 
 for _,spec in pairs(texts) do
   loadFonts(spec)
 end
-cairo.cairo_set_font_size(cr, ptSize)
 
 
-local e = xcb.xcb_wait_for_event(conn)
+local e = xcb.xcb_wait_for_event_typed(conn)
 while (e) do
   local response_type = e.response_type
   if (response_type == xcb.XCB_EXPOSE) then
     local x = 20
     local y = 50
+    --TODO: any way to change cairo context/surface width without recreating?
+    width = e.width
+    local surface = cairo_xcb.cairo_xcb_surface_create(conn, wid, visual, width, height)
+    local cr = cairo.cairo_create(surface)
+    cairo.cairo_set_font_size(cr, ptSize)
     cairo.cairo_set_source_rgb (cr, 0.0, 0.0, 0.0)
     cairo.cairo_paint(cr)
     cairo.cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1.0)
@@ -155,7 +159,7 @@ while (e) do
   elseif (response_type == xcb.XCB_KEY_PRESS) then
     break
   end
-  e = xcb.xcb_wait_for_event(conn)
+  e = xcb.xcb_wait_for_event_typed(conn)
 end
 xcb.xcb_disconnect(conn)
 

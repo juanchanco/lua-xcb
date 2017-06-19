@@ -63,7 +63,7 @@
 %include "xcb/xcb.h"
 %include "xcb/xproto.h"
 %inline %{
-static xcb_visualtype_t *find_visual(xcb_connection_t *c, xcb_visualid_t visual) {
+xcb_visualtype_t *find_visual(xcb_connection_t *c, xcb_visualid_t visual) {
     xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(xcb_get_setup(c));
 
     for (; screen_iter.rem; xcb_screen_next(&screen_iter)) {
@@ -78,4 +78,87 @@ static xcb_visualtype_t *find_visual(xcb_connection_t *c, xcb_visualid_t visual)
 
     return NULL;
 }
+%}
+%native(setmetatable) int userdata_set_metatable(lua_State *L);
+%native(xcb_poll_for_event_typed) int _xcb_poll_for_event_typed(lua_State *L);
+%native(xcb_wait_for_event_typed) int _xcb_wait_for_event_typed(lua_State *L);
+%{
+int userdata_set_metatable(lua_State *L)
+{
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+    luaL_checktype(L, 2, LUA_TTABLE);
+    lua_pushvalue(L,2);
+    lua_setmetatable(L,1);
+    return 0;
+}
+
+int _xcb_poll_for_event_typed(lua_State* L) {
+  int SWIG_arg = 0;
+  xcb_connection_t *arg1 = (xcb_connection_t *) 0 ;
+  xcb_generic_event_t *result = 0 ;
+  
+  SWIG_check_num_args("xcb_poll_for_event",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("xcb_poll_for_event",1,"xcb_connection_t *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_xcb_connection_t,0))){
+    SWIG_fail_ptr("xcb_poll_for_event",1,SWIGTYPE_p_xcb_connection_t);
+  }
+  
+  result = (xcb_generic_event_t *)xcb_poll_for_event(arg1);
+  int t = result->response_type;
+
+  if (t == XCB_BUTTON_PRESS || t == XCB_BUTTON_RELEASE || t == XCB_MOTION_NOTIFY || t == XCB_ENTER_NOTIFY || t == XCB_LEAVE_NOTIFY) {
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_button_press_event_t,0); SWIG_arg++; 
+  } else if (t == XCB_KEY_PRESS || t == XCB_KEY_RELEASE) {
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_key_press_event_t,0); SWIG_arg++; 
+  } else if (t == XCB_EXPOSE) {
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_expose_event_t,0); SWIG_arg++; 
+  /*} else if (result->response_type == 0) {*/
+    /*SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_generic_event_t,0); SWIG_arg++; */
+  } else {
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_generic_event_t,0); SWIG_arg++; 
+  }
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+int _xcb_wait_for_event_typed(lua_State* L) {
+  int SWIG_arg = 0;
+  xcb_connection_t *arg1 = (xcb_connection_t *) 0 ;
+  xcb_generic_event_t *result = 0 ;
+  
+  SWIG_check_num_args("xcb_wait_for_event",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("xcb_wait_for_event",1,"xcb_connection_t *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_xcb_connection_t,0))){
+    SWIG_fail_ptr("xcb_wait_for_event",1,SWIGTYPE_p_xcb_connection_t);
+  }
+  
+  result = (xcb_generic_event_t *)xcb_wait_for_event(arg1);
+  int t = result->response_type;
+
+  if (t == XCB_BUTTON_PRESS || t == XCB_BUTTON_RELEASE || t == XCB_MOTION_NOTIFY || t == XCB_ENTER_NOTIFY || t == XCB_LEAVE_NOTIFY) {
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_button_press_event_t,0); SWIG_arg++; 
+  } else if (t == XCB_KEY_PRESS || t == XCB_KEY_RELEASE) {
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_key_press_event_t,0); SWIG_arg++; 
+  } else if (t == XCB_EXPOSE) {
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_expose_event_t,0); SWIG_arg++; 
+  /*} else if (result->response_type == 0) {*/
+    /*SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_generic_event_t,0); SWIG_arg++; */
+  } else {
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_generic_event_t,0); SWIG_arg++; 
+  }
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
 %}
