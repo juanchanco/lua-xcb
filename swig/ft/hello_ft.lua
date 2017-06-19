@@ -7,15 +7,6 @@ local cairo_xcb = require("swig_cairo_xcb")
 local cairo_ft = require("swig_cairo_ft")
 local xcb = require("swig_xcb")
 
---for k,v in pairs(ft) do
-  --print(string.format("%s = %s", k, v))
-  --local mt = getmetatable(v)
-  --if (mt) then
-    --for x,y in pairs(mt) do
-      --print(string.format("  %s = %s", x, y))
-    --end
-  --end
---end
 local mt = getmetatable(ft.FT_FaceRec)
 mt[".instance"]["__gc"] = function(_) print("GC!") end
 
@@ -61,7 +52,11 @@ function loadFonts(spec)
 end
 function createBuffer(ln, spec)
   local buf = hb.hb_buffer_create()
-  --getmetatable(buf)["__gc"] = function(self) hb.hb_buffer_destroy(self) end
+  local mt = {}
+  mt["__gc"] = function(self) print("DESTROY!"); hb.hb_buffer_destroy(self) end
+  mt["__len"] = function(self) return hb.hb_buffer_get_length(self) end
+  mt["__tostring"] = function(self) return "Harfbuzz Buffer" end
+  ft.setmetatable(buf, mt)
   hb.hb_buffer_set_unicode_funcs(buf, hb_glib.hb_glib_get_unicode_funcs())
   hb.hb_buffer_set_direction(buf, spec.direction);
   hb.hb_buffer_set_script(buf, spec.script)
@@ -86,7 +81,6 @@ function render(ln, spec, x, y)
   if (ln == "en") then x = 20 end
   if (ln == "ar")  then x = width - string_width_in_pixels - 20 end
   if (ln == "ch") then x = width//2 - string_width_in_pixels/2 end
-  print(string.format("%s -> %i/%i => %i", ln, x, y, string_width_in_pixels))
   local cairo_glyphs = cairo.new_glyphs(glyph_count)
   for i = 0, (glyph_count-1) do
     local cairo_glyph = cairo.cairo_glyph_t()
@@ -98,9 +92,7 @@ function render(ln, spec, x, y)
     x = x + ((position.x_advance)//64)
     y = y - ((position.y_advance)//64)
     cairo.glyphs_setitem(cairo_glyphs, i, cairo_glyph)
-  --print(string.format("  %s -> %i/%i", ln, x, y))
   end
-  hb.hb_buffer_destroy(buf)
   getmetatable(cairo_glyphs)["__len"] = function(self) return glyph_count end
   return cairo_glyphs
 end
