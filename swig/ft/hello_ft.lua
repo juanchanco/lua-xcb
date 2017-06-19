@@ -98,6 +98,7 @@ function render(ln, spec, x, y)
 end
 
 function renderToCairo(cr, surface, ln, spec, x, y)
+  print(string.format("HERE %s", ln))
   local glyphs = render(ln, spec, x, y)
   cairo.cairo_set_font_face(cr, spec.cairo_ft_face);
   cairo.cairo_show_glyphs(cr, glyphs, #glyphs);
