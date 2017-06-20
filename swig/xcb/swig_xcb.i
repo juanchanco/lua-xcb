@@ -143,8 +143,8 @@ int _xcb_wait_for_event_typed(lua_State* L) {
     SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_key_press_event_t,0); SWIG_arg++; 
   } else if (t == XCB_EXPOSE) {
     SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_expose_event_t,0); SWIG_arg++; 
-  /*} else if (result->response_type == 0) {*/
-    /*SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_generic_event_t,0); SWIG_arg++; */
+  } else if (result->response_type == 0) {
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_generic_error_t,0); SWIG_arg++; 
   } else {
     SWIG_NewPointerObj(L,result,SWIGTYPE_p_xcb_generic_event_t,0); SWIG_arg++; 
   }

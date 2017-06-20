@@ -39,6 +39,20 @@ win = xcb.xcb_generate_id (c)
 mask = xcb.XCB_CW_BACK_PIXEL | xcb.XCB_CW_EVENT_MASK
 xcb.values_setitem(values, 1, xcb.XCB_EVENT_MASK_EXPOSURE | xcb.XCB_EVENT_MASK_KEY_PRESS)
 
+local params = {xcb.XCB_COPY_FROM_PARENT,
+                     win,
+                     screen.root,
+                     0, 0,
+                     150, 150,
+                     10,
+                     xcb.XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                     screen.root_visual,
+                     mask, values}
+for i,v in ipairs(params) do
+  print(string.format("%i=%s", i,v))
+end
+print(string.format("v0=%s", xcb.values_getitem(values, 0)))
+print(string.format("v1=%s", xcb.values_getitem(values, 1)))
 xcb.xcb_create_window (c, xcb.XCB_COPY_FROM_PARENT,
                      win,
                      screen.root,

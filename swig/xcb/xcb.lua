@@ -1,16 +1,89 @@
 local xcb = require("swig_xcb")
+local getWDefault = function(x, d) if (x == nil) then return d else return x end end
+local zeroIfNull = function(x) if (x == nil) then return 0 else return x end end
+local setupMetatables = function()
+  local mt = getmetatable(xcb.xcb_setup_t)
+  local old__index = mt[".instance"]["__index"]
+  local new__index = {
+    setupRootsIterator = function(self) return xcb.xcb_setup_roots_iterator(self) end,
+  }
+  local mtx = {
+    __index = old__index
+  }
+  setmetatable(new__index, mtx)
+  mt[".instance"]["__index"] = new__index
+end
+setupMetatables()
 
-local window_methods = {
-  getGeometry = function(self)
-    local cookie = xcb.xcb_get_geometry(self.connection, self.id)
-    --TODO no one seems to use the error (always passing null) what do the codes mean?
-    local reply,_ = xcb.xcb_get_geometry_reply(self.connection, cookie)
-    return reply
-  end,
-}
-local setup_methods = {
-  setupRootsIterator = function(self) return xcb.xcb_setup_roots_iterator(self) end,
-}
+local _new_window = function(connection, win_id)
+  local mt = {
+    __tostring = function(_) return string.format("XCB Window(id:%i)", win_id) end,
+    __index = {
+      id = win_id,
+      getGeometry = function(_)
+        local cookie = xcb.xcb_get_geometry(connection, win_id)
+        --TODO no one seems to use the error (always passing null) what do the codes mean?
+        local reply,_ = xcb.xcb_get_geometry_reply(connection, cookie)
+        return reply
+      end,
+    }
+  }
+  local win = {}
+  setmetatable(win, mt)
+  return win
+end
+local _new_gc = function(_, win_id)
+  local mt = {
+    __tostring = function(_) return string.format("XCB GraphicsContext(id:%i)", win_id) end,
+    __index = {
+      id = win_id,
+    }
+  }
+  local win = {}
+  setmetatable(win, mt)
+  return win
+end
+
+local _createGc = function(conn, params)
+  assert(params, "_createGc: no params table")
+  local parent = assert(params.parent, "_createGc: parent not set")
+  local mask = zeroIfNull(params.mask)
+  local value0 = zeroIfNull(params.value0)
+  local value1 = zeroIfNull(params.value1)
+  local win_id = xcb.xcb_generate_id(conn)
+  local values = xcb.new_values(2)
+  xcb.values_setitem(values, 0, value0)
+  xcb.values_setitem(values, 1, value1)
+  xcb.xcb_create_gc(conn, win_id, parent, mask, values)
+  return _new_gc(conn, win_id)
+end
+local _createWindow = function(conn, params)
+  --for k,v in pairs(params) do
+    --print(string.format("_createWindow: %s=%s", k,v))
+  --end
+  assert(params, "_createWindow: no params table")
+  local parent = assert(params.parent, "_createWindow: parent not set")
+  local class = assert(params.class, "_createWindow: class not set")
+  local visual = assert(params.visual, "_createWindow: visual not set")
+  local depth = getWDefault(params.depth, xcb.XCB_COPY_FROM_PARENT)
+  local x = getWDefault(params.x, xcb.XCB_COPY_FROM_PARENT)
+  local y = getWDefault(params.y, xcb.XCB_COPY_FROM_PARENT)
+  local width = getWDefault(params.w, xcb.XCB_COPY_FROM_PARENT)
+  local height = getWDefault(params.h, xcb.XCB_COPY_FROM_PARENT)
+  local border_width = getWDefault(params.border, xcb.XCB_COPY_FROM_PARENT)
+  local mask = zeroIfNull(params.mask)
+  local value0 = zeroIfNull(params.value0)
+  local value1 = zeroIfNull(params.value1)
+  local win_id = xcb.xcb_generate_id(conn)
+  local values = xcb.new_values(2)
+  xcb.values_setitem(values, 0, value0)
+  xcb.values_setitem(values, 1, value1)
+  xcb.xcb_create_gc(conn, win_id, parent, mask, values)
+  xcb.xcb_create_window (conn, depth, win_id, parent,
+                      x, y, width, height, border_width,
+                      class, visual, mask, values)
+    return _new_window(conn, win_id)
+end
 local connection_methods = {
   disconnect = function(self) return xcb.xcb_disconnect(self) end,
   hasError = function(self) return xcb.xcb_connection_has_error(self) end,
@@ -19,11 +92,39 @@ local connection_methods = {
   flush = function(self) return xcb.xcb_flush(self) end,
   waitForEvent = function(self) return xcb.xcb_wait_for_event_typed(self) end,
   pollForEvent = function(self) return xcb.xcb_poll_for_event_types(self) end,
+  getFileDescriptor = function(self) return xcb.xcb_get_file_descriptor(self) end,
   flush = function(self) return xcb.xcb_flush(self) end,
-  mapWindow = function(self, win_id) xcb.xcb_map_window(self, win_id) end,
-  unmapWindow = function(self, win_id) xcb.xcb_unmap_window(self, win_id) end,
+  mapWindow = function(self, win) xcb.xcb_map_window(self, win.id) end,
+  unmapWindow = function(self, win) xcb.xcb_unmap_window(self, win.id) end,
+  createGc = _createGc,
+  createWindow = _createWindow,
 }
---local c = xcb.xcb_connect(nil, 0)
+local connect = function(params)
+  local display
+  local screenp
+  if (params) then
+    display = params.display
+    screenp = params.screenp
+  end
+  if (screenp == nil) then screenp = 0 end
+  local connection = xcb.xcb_connect(display, screenp)
+  if (connection == nil) then
+    return nil, "unknown error"
+  end
+  local error = xcb.xcb_connection_has_error(connection)
+  if (error > 0) then
+    -- TODO: better error
+    return nil, error
+  end
+  local mt = {
+    __index = connection_methods,
+    __tostring = function(_)
+      return string.format("XCB Connection(display:%s, screen: %i)", display, screenp)
+    end,
+  }
+  xcb.setmetatable(connection, mt)
+  return connection
+end
 
 local ConnectionError = {
     Error = xcb.XCB_CONN_ERROR,
@@ -161,5 +262,6 @@ return {
   ConnectionError = ConnectionError,
   WindowClass = WindowClass,
   CW = CW,
-  GC = GC
+  GC = GC,
+  connect = connect
 }
