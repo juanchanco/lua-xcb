@@ -42,12 +42,12 @@ local loadFonts = function(spec)
   local _,ft_face = ft.FT_New_Face(ft_library, spec.font, 0)
   ft.FT_Set_Char_Size(ft_face, 0, ptSize*64.0, device_hdpi, device_vdpi )
   local hb_ft_font = hb_ft.hb_ft_font_create_null_func(ft_face)
-  local hb_ft_face = hb_ft.hb_ft_face_create_null_func(ft_face)
+  --local hb_ft_face = hb_ft.hb_ft_face_create_null_func(ft_face)
   local cairo_ft_face = cairo_ft.cairo_ft_font_face_create_for_ft_face(ft_face, 0)
   local _ = cairo.cairo_font_face_status(cairo_ft_face)
   spec.ft_face = ft_face
   spec.hb_ft_font = hb_ft_font
-  spec.hb_ft_face = hb_ft_face
+  --spec.hb_ft_face = hb_ft_face
   spec.cairo_ft_face = cairo_ft_face
 end
 local createBuffer = function(ln, spec)
@@ -82,6 +82,7 @@ local render = function(ln, spec, x, y)
   if (ln == "ar")  then x = width - string_width_in_pixels - 20 end
   if (ln == "ch") then x = width//2 - string_width_in_pixels/2 end
   local cairo_glyphs = cairo.new_glyphs(glyph_count)
+  getmetatable(cairo_glyphs)["__len"] = function(_) return glyph_count end
   for i = 0, (glyph_count-1) do
     local cairo_glyph = cairo.cairo_glyph_t()
     local position = hb.get_glyph_position(glyph_positions, i)
@@ -93,7 +94,6 @@ local render = function(ln, spec, x, y)
     y = y - ((position.y_advance)//64)
     cairo.glyphs_setitem(cairo_glyphs, i, cairo_glyph)
   end
-  getmetatable(cairo_glyphs)["__len"] = function(_) return glyph_count end
   return cairo_glyphs
 end
 
@@ -166,7 +166,7 @@ xcb.xcb_disconnect(conn)
 for _,spec in pairs(texts) do
   cairo.cairo_font_face_destroy(spec.cairo_ft_face)
   hb.hb_font_destroy(spec.hb_ft_font)
-  hb.hb_face_destroy(spec.hb_ft_face)
+  --hb.hb_face_destroy(spec.hb_ft_face)
 end
 
 ft.FT_Done_FreeType(ft_library)
