@@ -15,6 +15,26 @@ local setupMetatables = function()
 end
 setupMetatables()
 
+
+local _new_rect = function(params)
+  local r = xcb.xcb_rectangle_t()
+  r.x = zeroIfNull(params.x)
+  r.y = zeroIfNull(params.y)
+  r.width = zeroIfNull(params.w)
+  r.height = zeroIfNull(params.h)
+  return r
+end
+local _new_rects = function(rects)
+  -- won't work with a sparce table
+  local rectangles = xcb.new_rectangles(#rects)
+  for i,rect in ipairs(rects) do
+    local r = _new_rect(rect)
+    xcb.rectangles_setitem(rectangles, i-1, r)
+  end
+  getmetatable(rectangles).__len = function(_) return #rects end
+  return rectangles
+end
+
 local _new_window = function(connection, win_id)
   local mt = {
     __tostring = function(_) return string.format("XCB Window(id:%i)", win_id) end,
@@ -25,6 +45,22 @@ local _new_window = function(connection, win_id)
         --TODO no one seems to use the error (always passing null) what do the codes mean?
         local reply,_ = xcb.xcb_get_geometry_reply(connection, cookie)
         return reply
+      end,
+      imageText = function(_, params)
+        local gc = assert(params.gc, "imageText: gc not set")
+        local x = zeroIfNull(params.x)
+        local y = zeroIfNull(params.y)
+        local string = params.text
+        if (text == nil) then
+          text = "Hello, XCB!"
+        end
+        xcb.xcb_image_text_8 (connection, #text, win_id, gc.id, x, y, text)
+      end,
+      polyRectangle = function(_, params)
+        local gc = assert(params.gc, "imageText: gc not set")
+        local rects = assert(params.rects, "imageText: rects not set")
+        local rectangles = _new_rects(rects)
+        xcb.xcb_poly_rectangle (connection, win_id, gc.id, #rectangles, rectangles)
       end,
     }
   }
