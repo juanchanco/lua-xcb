@@ -1,58 +1,30 @@
 local xcb = require("swig_xcb")
 
---for k,v in pairs(xcb) do
-  --local mt = getmetatable(v)
-  --if (mt) then
-    --print(string.format("%s = %s", k, v))
-    --for x,y in pairs(mt) do
-      --print(string.format("  %s = %s", x, y))
-    --end
-  --end
---end
-local c = xcb.xcb_connect(nil, 0)
-local e = xcb.xcb_connection_has_error(c)
-local screen = xcb.xcb_setup_roots_iterator(xcb.xcb_get_setup(c)).data
-local win = screen.root
-local foreground = xcb.xcb_generate_id (c)
-local mask = xcb.XCB_GC_FOREGROUND | xcb.XCB_GC_GRAPHICS_EXPOSURES
-local values = xcb.new_values(2)
-xcb.values_setitem(values, 0, screen.black_pixel)
-xcb.values_setitem(values, 1, 0)
-xcb.xcb_create_gc (c, foreground, win, mask, values)
+local window_methods = {
+  getGeometry = function(self)
+    local cookie = xcb.xcb_get_geometry(self.connection, self.id)
+    --TODO no one seems to use the error (always passing null) what do the codes mean?
+    local reply,_ = xcb.xcb_get_geometry_reply(self.connection, cookie)
+    return reply
+  end,
+}
+local setup_methods = {
+  setupRootsIterator = function(self) return xcb.xcb_setup_roots_iterator(self) end,
+}
+local connection_methods = {
+  disconnect = function(self) return xcb.xcb_disconnect(self) end,
+  hasError = function(self) return xcb.xcb_connection_has_error(self) end,
+  getSetup = function(self) return xcb.xcb_get_setup(self) end,
+  generateId = function(self) return xcb.xcb_generate_id(self) end,
+  flush = function(self) return xcb.xcb_flush(self) end,
+  waitForEvent = function(self) return xcb.xcb_wait_for_event_typed(self) end,
+  pollForEvent = function(self) return xcb.xcb_poll_for_event_types(self) end,
+  flush = function(self) return xcb.xcb_flush(self) end,
+  mapWindow = function(self, win_id) xcb.xcb_map_window(self, win_id) end,
+  unmapWindow = function(self, win_id) xcb.xcb_unmap_window(self, win_id) end,
+}
+--local c = xcb.xcb_connect(nil, 0)
 
-local background = xcb.xcb_generate_id (c)
-mask = xcb.XCB_GC_BACKGROUND | xcb.XCB_GC_GRAPHICS_EXPOSURES
-xcb.values_setitem(values, 0, screen.white_pixel)
-xcb.values_setitem(values, 1, 0)
-xcb.xcb_create_gc (c, background, win, mask, values)
-
-xcb.delete_values(values)
-
-win = xcb.xcb_generate_id (c)
-mask = xcb.XCB_CW_BACK_PIXEL | xcb.XCB_CW_EVENT_MASK
-xcb.values_setitem(values, 1, xcb.XCB_EVENT_MASK_EXPOSURE | xcb.XCB_EVENT_MASK_KEY_PRESS)
-
-xcb.xcb_create_window (c, xcb.XCB_COPY_FROM_PARENT,
-                     win,
-                     screen.root,
-                     0, 0,
-                     150, 150,
-                     10,
-                     xcb.XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                     screen.root_visual,
-                     mask, values)
- 
-xcb.xcb_map_window (c, win)
-xcb.xcb_flush (c);
-local e = xcb.xcb_wait_for_event(c)
---while (e) do
-  print(e.response_type)
-
-for k,v in pairs(getmetatable(e)) do
-  --print(string.format("%s = %s", k, v))
-end
-xcb.xcb_disconnect(c)
---print(c)
 local ConnectionError = {
     Error = xcb.XCB_CONN_ERROR,
     ClosedExtNotsupported = xcb.XCB_CONN_CLOSED_EXT_NOTSUPPORTED,
@@ -118,7 +90,74 @@ local GC = {
     ArcMode = xcb.XCB_GC_ARC_MODE
 }
 
+local EventType = {
+  KeyPress = xcb.XCB_KEY_PRESS,
+  KeyRelease = xcb.XCB_KEY_RELEASE,
+  ButtonPress = xcb.XCB_BUTTON_PRESS,
+  ButtonRelease = xcb.XCB_BUTTON_RELEASE,
+  MotionNotify = xcb.XCB_MOTION_NOTIFY,
+  EnterNotify = xcb.XCB_ENTER_NOTIFY,
+  LeaveNotify = xcb.XCB_LEAVE_NOTIFY,
+  FocusIn = xcb.XCB_FOCUS_IN,
+  FocusOut = xcb.XCB_FOCUS_OUT,
+  KeymapNotify = xcb.XCB_KEYMAP_NOTIFY,
+  Expose = xcb.XCB_EXPOSE,
+  GraphicsExposure = xcb.XCB_GRAPHICS_EXPOSURE,
+  NoExposure = xcb.XCB_NO_EXPOSURE,
+  VisibilityNotify = xcb.XCB_VISIBILITY_NOTIFY,
+  CreateNotify = xcb.XCB_CREATE_NOTIFY,
+  DestroyNotify = xcb.XCB_DESTROY_NOTIFY,
+  UnmapNotify = xcb.XCB_UNMAP_NOTIFY,
+  MapNotify = xcb.XCB_MAP_NOTIFY,
+  MapRequest = xcb.XCB_MAP_REQUEST,
+  ReparentNotify = xcb.XCB_REPARENT_NOTIFY,
+  ConfigureNotify = xcb.XCB_CONFIGURE_NOTIFY,
+  ConfigureRequest = xcb.XCB_CONFIGURE_REQUEST,
+  GravityNotify = xcb.XCB_GRAVITY_NOTIFY,
+  ResizeRequest = xcb.XCB_RESIZE_REQUEST,
+  CirculateNotify = xcb.XCB_CIRCULATE_NOTIFY,
+  CirculateRequest = xcb.XCB_CIRCULATE_REQUEST,
+  PropertyNotify = xcb.XCB_PROPERTY_NOTIFY,
+  SelectionClear = xcb.XCB_SELECTION_CLEAR,
+  SelectionRequest = xcb.XCB_SELECTION_REQUEST,
+  SelectionNotify = xcb.XCB_SELECTION_NOTIFY,
+  ColormapNotify = xcb.XCB_COLORMAP_NOTIFY,
+  ClientMessage = xcb.XCB_CLIENT_MESSAGE,
+  MappingNotify = xcb.XCB_MAPPING_NOTIFY
+  --GeGeneric = xcb.XCB_GE_GENERIC,
+}
+
+local EventMask = {
+  NoEvent = xcb.XCB_EVENT_MASK_NO_EVENT,
+  KeyPress = xcb.XCB_EVENT_MASK_KEY_PRESS,
+  KeyRelease = xcb.XCB_EVENT_MASK_KEY_RELEASE,
+  ButtonPress = xcb.XCB_EVENT_MASK_BUTTON_PRESS,
+  ButtonRelease = xcb.XCB_EVENT_MASK_BUTTON_RELEASE,
+  EnterWindow = xcb.XCB_EVENT_MASK_ENTER_WINDOW,
+  LeaveWindow = xcb.XCB_EVENT_MASK_LEAVE_WINDOW,
+  PointerMotion = xcb.XCB_EVENT_MASK_POINTER_MOTION,
+  PointerMotionHint = xcb.XCB_EVENT_MASK_POINTER_MOTION_HINT,
+  Button1Motion = xcb.XCB_EVENT_MASK_BUTTON_1_MOTION,
+  Button2Motion = xcb.XCB_EVENT_MASK_BUTTON_2_MOTION,
+  Button3Motion = xcb.XCB_EVENT_MASK_BUTTON_3_MOTION,
+  Button4Motion = xcb.XCB_EVENT_MASK_BUTTON_4_MOTION,
+  Button5Motion = xcb.XCB_EVENT_MASK_BUTTON_5_MOTION,
+  ButtonMotion = xcb.XCB_EVENT_MASK_BUTTON_MOTION,
+  KeymapState = xcb.XCB_EVENT_MASK_KEYMAP_STATE,
+  Exposure = xcb.XCB_EVENT_MASK_EXPOSURE,
+  VisibilityChange = xcb.XCB_EVENT_MASK_VISIBILITY_CHANGE,
+  StructureNotify = xcb.XCB_EVENT_MASK_STRUCTURE_NOTIFY,
+  ResizeRedirect = xcb.XCB_EVENT_MASK_RESIZE_REDIRECT,
+  SubstructureNotify = xcb.XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+  SubstructureRedirect = xcb.XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+  FocusChange = xcb.XCB_EVENT_MASK_FOCUS_CHANGE,
+  PropertyChange = xcb.XCB_EVENT_MASK_PROPERTY_CHANGE,
+  ColorMapChange = xcb.XCB_EVENT_MASK_COLOR_MAP_CHANGE,
+  OwnerGrabButton = xcb.XCB_EVENT_MASK_OWNER_GRAB_BUTTON,
+}
 return {
+  EventMask = EventMask,
+  EventType = EventType,
   ConnectionError = ConnectionError,
   WindowClass = WindowClass,
   CW = CW,

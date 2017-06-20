@@ -53,7 +53,7 @@ end
 local createBuffer = function(ln, spec)
   local buf = hb.hb_buffer_create()
   local mt = {}
-  mt["__gc"] = function(self) print("DESTROY!"); hb.hb_buffer_destroy(self) end
+  mt["__gc"] = function(self) hb.hb_buffer_destroy(self) end
   mt["__len"] = function(self) return hb.hb_buffer_get_length(self) end
   mt["__tostring"] = function(_) return "Harfbuzz Buffer" end
   ft.setmetatable(buf, mt)
@@ -80,8 +80,6 @@ local render = function(ln, spec, x, y)
 
   if (ln == "en") then x = 20 end
   if (ln == "ar")  then x = width - string_width_in_pixels - 20 end
-  print("HERE")
-  print(x)
   if (ln == "ch") then x = width//2 - string_width_in_pixels/2 end
   local cairo_glyphs = cairo.new_glyphs(glyph_count)
   for i = 0, (glyph_count-1) do

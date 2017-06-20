@@ -2,13 +2,9 @@
 %{
  #include <xcb/xcb.h>
 %}
-/*#define __attribute__(x)*/
-/*#define __asm(x)*/
-/*#define __inline*/
-/*#define __restrict*/
-/*#define __extension__*/
 %include <typemaps.i>
 %apply int* INPUT {int *screenp};
+%apply SWIGTYPE** OUTPUT { xcb_generic_error_t **e };
 /*typedef signed char int8_t;*/
 /*typedef unsigned char uint8_t;*/
 /*typedef short int int16_t;*/
