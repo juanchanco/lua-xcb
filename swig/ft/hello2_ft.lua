@@ -1,12 +1,9 @@
-local ft = require("swig_freetype")
+local ft = require("freetype")
 local hb = require("harfbuzz")
 local cairo = require("cairo")
 local xcb = require("xcb")
 
-local FT_FaceRec_mt = getmetatable(ft.FT_FaceRec)
-FT_FaceRec_mt[".instance"]["__gc"] = function(_) print("GC!") end
-
-local _,ft_library = ft.FT_Init_FreeType()
+local ft_library = ft.initFreeType()
 local ptSize      = 20.0;
 local device_hdpi = 100;
 local device_vdpi = 100;
@@ -35,15 +32,11 @@ local texts = {
 }
 
 local loadFonts = function(spec)
-  local _,ft_face = ft.FT_New_Face(ft_library, spec.font, 0)
-  ft.FT_Set_Char_Size(ft_face, 0, ptSize*64.0, device_hdpi, device_vdpi )
+  local ft_face = ft_library:newFace(spec.font)
+  ft_face:setCharSize(ptSize*64.0, device_hdpi, device_vdpi)
   local hb_ft_font = hb.ftFontCreate(ft_face)
-  --local hb_ft_face = hb_ft.hb_ft_face_create_null_func(ft_face)
   local cairo_ft_face = cairo.fontFaceCreateForFtFace(ft_face, 0)
-  print(cairo_ft_face:status())
-  spec.ft_face = ft_face
   spec.hb_ft_font = hb_ft_font
-  --spec.hb_ft_face = hb_ft_face
   spec.cairo_ft_face = cairo_ft_face
 end
 local createBuffer = function(ln, spec)
@@ -144,12 +137,3 @@ while (e) do
 end
 conn:disconnect()
 
-
-
-for _,spec in pairs(texts) do
-  cairo.cairo_font_face_destroy(spec.cairo_ft_face)
-  hb.hb_font_destroy(spec.hb_ft_font)
-  --hb.hb_face_destroy(spec.hb_ft_face)
-end
-
-ft.FT_Done_FreeType(ft_library)
