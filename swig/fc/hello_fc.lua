@@ -4,9 +4,20 @@ print(result)
 local config = fc.FcConfigGetCurrent();
 fc.FcConfigSetRescanInterval(config, 0);
 local pat = fc.FcPatternCreate();
-local os = fc.fcObjectSetBuild (fc.FC_FAMILY, fc.FC_STYLE, fc.FC_LANG);
+local os = fc.FcObjectSetBuild4 (fc.FC_FAMILY, fc.FC_STYLE, fc.FC_LANG, fc.FC_FILE);
 local fs = fc.FcFontList(config, pat, os);
 print(string.format("Total fonts: %s", fs.nfont))
+for i = 0, (fs.nfont-1) do
+  local font = fc.get_FcPattern(fs.fonts, i)
+  --fc.FcPatternPrint(font)
+  local name = fc.FcNameUnparse(font)
+  local code, file = fc.FcPatternGetString(font, fc.FC_FILE, 0)
+  if (code == fc.FcResultMatch) then
+    print(string.format("match %s: %s", fc.fcToString(name), fc.fcToString(file)))
+  else
+    print(string.format("NO MATCH for %s: %i", fc.fcToString(name), code))
+  end
+end
 --FcPattern *pat;
 --FcFontSet *fs;
 --FcObjectSet *os;
