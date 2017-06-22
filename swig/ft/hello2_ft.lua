@@ -65,7 +65,6 @@ local render = function(ln, spec, x, y)
   if (ln == "ar")  then x = width - string_width_in_pixels - 20 end
   if (ln == "ch") then x = width//2 - string_width_in_pixels/2 end
   local cairo_glyphs = cairo.newGlyphsArray(#glyph_positions)
-  getmetatable(cairo_glyphs)["__len"] = function(_) return #glyph_positions end
   for i = 1, #glyph_positions do
     local cairo_glyph = cairo.newGlyph()
     local position = glyph_positions[i]
@@ -81,7 +80,6 @@ local render = function(ln, spec, x, y)
 end
 
 local renderToCairo = function(cr, surface, ln, spec, x, y)
-  print(string.format("HERE %s", ln))
   local glyphs = render(ln, spec, x, y)
   cr:setFontFace(spec.cairo_ft_face)
   cr:showGlyphs(glyphs)

@@ -2,13 +2,11 @@ local hb = require("swig_hb")
 local hb_ft = require("swig_hb_ft")
 local hb_glib = require("swig_hb_glib")
 
-local bufferCreate = function()
-  local buf = hb.hb_buffer_create()
-  local mt = {}
-  mt.__gc = function(self) hb.hb_buffer_destroy(self) end
-  mt.__len = function(self) return hb.hb_buffer_get_length(self) end
-  mt.__tostring = function(_) return "Harfbuzz Buffer" end
-  mt.__index = {
+local buffer_mt = {
+  __gc = function(self) hb.hb_buffer_destroy(self) end,
+  __len = function(self) return hb.hb_buffer_get_length(self) end,
+  __tostring = function(_) return "Harfbuzz Buffer" end,
+  __index = {
     --setUnicodeFuncs = function(self, funcs)
       --hb.hb_buffer_set_unicode_funcs(self, funcs)
     --end,
@@ -56,8 +54,11 @@ local bufferCreate = function()
       -- TODO: what are the other params for?
       hb.hb_shape(font, self, nil, 0);
     end,
-  }
-  hb.setmetatable(buf, mt)
+  },
+}
+local bufferCreate = function()
+  local buf = hb.hb_buffer_create()
+  hb.setmetatable(buf, buffer_mt)
   hb.hb_buffer_set_unicode_funcs(buf, hb_glib.hb_glib_get_unicode_funcs())
   return buf
 end
