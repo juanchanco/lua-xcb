@@ -35,7 +35,7 @@ FcObjectSet * FcObjectSetBuild4 (const char *first, const char *second, const ch
 FcPattern * get_FcPattern(FcPattern** arr, int i) {
   return arr[i];
 }
-/*TODO: figure out hwor to get swig to handle this*/
+/*TODO: figure out how to get swig to handle this*/
 char* fcToString(FcChar8* str) { return (char*) str; }
 %}
 %native(setmetatable) int userdata_set_metatable(lua_State *L);

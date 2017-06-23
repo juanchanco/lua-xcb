@@ -22,9 +22,20 @@ local buffer_mt = {
     setLanguageFromName = function(self, name)
       hb.hb_buffer_set_language(self, hb.hb_language_from_string(name, #name))
     end,
-    addUtf8 = function(self, text)
-      -- TODO: what are the extra params for?
-      hb.hb_buffer_add_utf8(self, text, #(text), 0, #(text))
+    addUtf8 = function(self, text, offset, length)
+      if (offset == nil) then offset = 0 end
+      if (length == nil) then length = #text end
+      hb.hb_buffer_add_utf8(self, text, #text, offset, length)
+    end,
+    addUtf16 = function(self, text, offset, length)
+      if (offset == nil) then offset = 0 end
+      if (length == nil) then length = #text end
+      hb.hb_buffer_add_utf16(self, text, #text, offset, length)
+    end,
+    addUtf32 = function(self, text, offset, length)
+      if (offset == nil) then offset = 0 end
+      if (length == nil) then length = #text end
+      hb.hb_buffer_add_utf32(self, text, #text, offset, length)
     end,
     getGlyphInfos = function(self)
       local glyph_infos, glyph_count = hb.hb_buffer_get_glyph_infos(self);
