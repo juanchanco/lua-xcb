@@ -8,6 +8,18 @@
 /*typedef int32_t hb_position_t;*/
 /*typedef uint32_t hb_mask_t;*/
 
+%typemap(in) hb_direction_t {
+  $1 = (int) lua_tointeger(L, $input);
+}
+%typemap(out) hb_direction_t {
+  lua_pushinteger(L, (int) $1); SWIG_arg++;
+}
+%typemap(in) hb_script_t {
+  $1 = (int) lua_tointeger(L, $input);
+}
+%typemap(out) hb_script_t {
+  lua_pushinteger(L, (int) $1); SWIG_arg++;
+}
 %typemap(in) hb_position_t {
   $1 = (uint32_t) lua_tointeger(L, $input);
 }

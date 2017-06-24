@@ -21,11 +21,6 @@
 %inline %{
 void memcpy_FriBidiCharArray(FriBidiChar *dest, char *src, int l) {
     memcpy(dest,src,l);
-    for (int i = 0; i < l/4; ++i)
-    {
-        printf("ch => %u\n", dest[i]);
-        /*dest[i] = ((uint*) src)[i];*/
-    }
 }
 void memcpy_FriBidiCharArray2(FriBidiChar *dest, FriBidiChar *src, int l) {
     l = l * sizeof(FriBidiChar);
