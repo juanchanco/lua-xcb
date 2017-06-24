@@ -16,9 +16,12 @@
 %array_functions(FriBidiLevel, FriBidiLevelArray)
 %array_functions(FriBidiJoiningType, FriBidiJoiningTypeArray)
 %array_functions(FriBidiArabicProp, FriBidiArabicPropArray)
-%array_functions(uint, UintArray)
+%array_functions(uint32_t, Uint32Array)
 
 %inline %{
+void memcpy_Uint32Array(uint32_t *dest, char *src, int l) {
+    memcpy(dest,src,l);
+}
 void memcpy_FriBidiCharArray(FriBidiChar *dest, char *src, int l) {
     memcpy(dest,src,l);
 }
@@ -32,6 +35,7 @@ void memcpy_FriBidiJoiningTypeArray(FriBidiArabicProp *dest, FriBidiJoiningType 
 }
 %}
 %native(setmetatable) int userdata_set_metatable(lua_State *L);
+%native(alt_Uint32Array_getitem) int _alt_Uint32Array_getitem(lua_State *L);
 %native(get_par_embedding_levels_ref) int _wrap_fribidi_get_par_embedding_levels_ref(lua_State *L);
 %{
 int userdata_set_metatable(lua_State *L)
@@ -81,4 +85,30 @@ fail:
 }
 
 
+static int _alt_Uint32Array_getitem(lua_State* L) {
+  int SWIG_arg = 0;
+  uint32_t *arg1 = (uint32_t *) 0 ;
+  int arg2 ;
+  uint32_t result;
+  
+  SWIG_check_num_args("Uint32Array_getitem",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Uint32Array_getitem",1,"uint32_t *");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("Uint32Array_getitem",2,"int");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_uint32_t,0))){
+    SWIG_fail_ptr("Uint32Array_getitem",1,SWIGTYPE_p_uint32_t);
+  }
+  
+  arg2 = (int)lua_tonumber(L, 2);
+  
+  result = Uint32Array_getitem(arg1,arg2);
+  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
 %}

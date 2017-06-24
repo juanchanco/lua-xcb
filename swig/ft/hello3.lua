@@ -2,6 +2,10 @@ local fb = require("swig_fribidi")
 local iconv = require("iconv")
 local hb = require("harfbuzz")
 
+local cairo = require("cairo")
+local ft = require("freetype")
+local xcb = require("xcb")
+
 local text8 = "Ленивый рыжий кот شَدَّة latin العَرَبِية";
 
 local ic = assert(iconv.open("UTF-32LE", "UTF-8"))
@@ -42,21 +46,124 @@ local levels = fb.fribidi_reorder_line(fb.FRIBIDI_FLAGS_ARABIC, pTempBidiTypes, 
   --print(string.format("%i => %i", i, fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, i)))
 --end
 local chunks = {}
-local ufuncs = hb.unicodeFuncsGetDefault()
 local chunkStart = 0
-local currentScript = hb.unicodeScript(ufuncs, fb.FriBidiCharArray_getitem(pTempLogicalLine, chunkStart))
+local currentScript = hb.unicodeScript(fb.FriBidiCharArray_getitem(pTempLogicalLine, chunkStart))
 for j = 1,nLineSize-1 do
-  local script = hb.unicodeScript(ufuncs, fb.FriBidiCharArray_getitem(pTempLogicalLine, j))
+  local script = hb.unicodeScript(fb.FriBidiCharArray_getitem(pTempLogicalLine, j))
   if (script ~= currentScript and script ~= hb.Script.Inherited) then
       local chunk = {
-        chunk_start = chunkStart,
-        chunk_end = j-1,
-        chunck_script = currentScript,
+        start = chunkStart,
+        length = j - chunkStart,
+        script = currentScript,
       }
-      print(string.format("i=%i, j=%i, script=%s", chunkStart, j-1, currentScript))
       table.insert(chunks,chunk)
       
       chunkStart = j
       currentScript = script
   end
 end
+local currentSymbol = fb.FriBidiCharArray_getitem(pTempLogicalLine, chunkStart)
+if (chunkStart <= nLineSize) then
+  local chunk = {
+    start = chunkStart,
+    length = nLineSize - chunkStart,
+    script = currentScript,
+  }
+  table.insert(chunks,chunk)
+end
+
+
+
+-------------------- drawing ----------------
+
+local ft_library = ft.initFreeType()
+local ptSize      = 20.0;
+local device_hdpi = 100;
+local device_vdpi = 100;
+local width      = 500;
+local height     = 500;
+local fontPath = "fonts/arial.ttf"
+
+local ft_face = ft_library:newFace(fontPath)
+ft_face:setCharSize(ptSize*64.0, device_hdpi, device_vdpi)
+local hb_ft_font = hb.ftFontCreate(ft_face)
+local cairo_ft_face = cairo.fontFaceCreateForFtFace(ft_face, 0)
+
+--TODO: work out u32_t type issues
+local textArray = fb.new_Uint32Array(nLineSize)
+fb.memcpy_Uint32Array(textArray, text, #text)
+local buf = hb.bufferCreate()
+local x = 20.0
+local y = 20.0
+local cairo_glyphs = cairo.newGlyphsArray(nLineSize)
+local c = 0
+local function chunkToCairo(chunk)
+  print(string.format("st=%i, l=%i, script=%s", chunk.start, chunk.length, chunk.script))
+  buf:clearContents()
+  buf:setScriptAndDirection(chunk.script)
+  buf:addUtf32(textArray, nLineSize, chunk.start, chunk.length)
+  buf:shape(hb_ft_font)
+
+  local glyph_infos = buf:getGlyphInfos()
+  local glyph_positions = buf:getGlyphPositions()
+  for j = 1, #glyph_positions do
+    local o = fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, chunk.start + j - 1)
+    local i = o - chunk.start + 1
+    local cairo_glyph = cairo.newGlyph()
+    local position = glyph_positions[i]
+    local info = glyph_infos[i]
+    cairo_glyph.index = info.codepoint
+    cairo_glyph.x = x + ((position.x_offset)/64)
+    cairo_glyph.y = y + ((position.y_offset)/64)
+    x = x + ((position.x_advance)/64)
+    y = y - ((position.y_advance)/64)
+    c = c + 1
+    cairo_glyphs[c] = cairo_glyph
+  end
+end
+for _,chunk in ipairs(chunks) do
+  chunkToCairo(chunk)
+end
+
+
+------------------------- display -----------------------
+
+--local conn = xcb.connect()
+--local screen = conn:getSetup():setupRootsIterator().data
+
+--local window = conn:createWindow({
+  --parent=screen.root,
+  --visual=screen.root_visual,
+  --x=20, y=20, w=width, h=height, border=10,
+  --class = xcb.WindowClass.InputOutput,
+  --mask=xcb.CW.BackPixel | xcb.CW.EventMask,
+  --value0=screen.black_pixel,
+  --value1=xcb.EventMask.Exposure | xcb.EventMask.KeyPress
+--})
+--conn:mapWindow(window)
+--conn:flush()
+--local visual = cairo.findVisual(conn, screen.root_visual)
+--conn:flush()
+
+--local surface = cairo.xcbSurfaceCreate(conn, window.id, visual, width, height)
+--local cr = surface:cairoCreate()
+--cr:setFontSize(ptSize)
+--cr:setFontFace(cairo_ft_face)
+
+--local e = conn:waitForEvent()
+--while (e) do
+  --local response_type = e.response_type
+  --if (response_type == xcb.EventType.Expose) then
+    --cr:setSourceRgb(0.0, 0.0, 0.0)
+    --cr:paint()
+    --cr:setSourceRgba(0.5, 0.5, 0.5, 1.0)
+    --cr:showGlyphs(cairo_glyphs)
+    --surface:flush()
+    --conn:flush()
+  --elseif (response_type == xcb.EventType.KeyPress) then
+    --break
+  --end
+  --e = conn:waitForEvent()
+--end
+--conn:disconnect()
+

@@ -7,14 +7,21 @@ local buffer_mt = {
   __len = function(self) return hb.hb_buffer_get_length(self) end,
   __tostring = function(_) return "Harfbuzz Buffer" end,
   __index = {
-    --setUnicodeFuncs = function(self, funcs)
-      --hb.hb_buffer_set_unicode_funcs(self, funcs)
-    --end,
+    setUnicodeFuncs = function(self, funcs)
+      hb.hb_buffer_set_unicode_funcs(self, funcs)
+    end,
+    clearContents = function(self)
+      hb.hb_buffer_clear_contents(self)
+    end,
     setDirection = function(self, direction)
       hb.hb_buffer_set_direction(self, direction)
     end,
     setScript = function(self, script)
       hb.hb_buffer_set_script(self, script)
+    end,
+    setScriptAndDirection = function(self, script)
+      hb.hb_buffer_set_script(self, script)
+      hb.hb_buffer_set_direction(self, hb.hb_script_get_horizontal_direction(script))
     end,
     setLanguage = function(self, ln)
       hb.hb_buffer_set_language(self, ln)
@@ -27,15 +34,16 @@ local buffer_mt = {
       if (length == nil) then length = #text end
       hb.hb_buffer_add_utf8(self, text, #text, offset, length)
     end,
-    addUtf16 = function(self, text, offset, length)
+    --addUtf16 = function(self, text, offset, length)
+      --if (offset == nil) then offset = 0 end
+      --if (length == nil) then length = #text end
+      --hb.hb_buffer_add_utf16(self, text, #text, offset, length)
+    --end,
+    --TODO: wrap u32 arrays
+    addUtf32 = function(self, text, len, offset, length)
       if (offset == nil) then offset = 0 end
       if (length == nil) then length = #text end
-      hb.hb_buffer_add_utf16(self, text, #text, offset, length)
-    end,
-    addUtf32 = function(self, text, offset, length)
-      if (offset == nil) then offset = 0 end
-      if (length == nil) then length = #text end
-      hb.hb_buffer_add_utf32(self, text, #text, offset, length)
+      hb.hb_buffer_add_utf32(self, text, len, offset, length)
     end,
     getGlyphInfos = function(self)
       local glyph_infos, glyph_count = hb.hb_buffer_get_glyph_infos(self);
@@ -85,12 +93,20 @@ local ftFontCreate = function(ft_face)
   return hb_ft_font
 end
 
+local default_funcs = hb.hb_unicode_funcs_get_default()
 local function unicodeFuncsGetDefault()
-  return hb.hb_unicode_funcs_get_default()
+  return default_funcs
 end
 
-local function unicodeScript(ufuncs, char)
+--TODO module level ufuncs?
+local function unicodeScript(char, ufuncs)
+  if (not(ufuncs)) then ufuncs = default_funcs end
   return hb.hb_unicode_script(ufuncs, char)
+end
+
+--TODO: are there other script functions? worth making an object?
+local function getHorizontalDirection(char)
+  return hb.hb_script_get_horizontal_direction(char)
 end
 
 local Direction = {
