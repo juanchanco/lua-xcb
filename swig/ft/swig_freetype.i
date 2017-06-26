@@ -14,7 +14,15 @@
 %typemap(out) FT_Error {
   lua_pushinteger(L, (int) $1); SWIG_arg++;
 }
+%include <carrays.i>
+%array_functions(FT_CharMap, FT_CharMapArray)
 %include "freetype.hh";
+%inline %{
+  FT_FaceRec derefFaceRec(FT_FaceRec* face) {
+    return  *face;
+  }
+  FT_SizeRec* asSizeRec(FT_Size* size) { return (FT_SizeRec*) size; }
+%}
 %native(setmetatable) int userdata_set_metatable(lua_State *L);
 %{
 int userdata_set_metatable(lua_State *L)

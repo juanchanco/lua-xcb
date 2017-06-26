@@ -39,7 +39,6 @@
   lua_pushinteger(L, (int) $1); SWIG_arg++;
 }
 %apply unsigned int* OUTPUT {unsigned int *length};
-%include <carrays.i>
 #define HB_H_IN
 #define HB_EXTERN extern
 #define HB_BEGIN_DECLS

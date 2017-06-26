@@ -8,7 +8,7 @@ local xcb = require("xcb")
 
 local text8 = "Ленивый рыжий кот شَدَّة latin العَرَبِية";
 
-local ic = assert(iconv.open("UTF-32LE", "UTF-8"))
+local ic = assert(iconv.open("utf-32le", "utf-8"))
 local text = ic:iconv(text8)
 
 local nLineSize = #text/4
@@ -43,7 +43,7 @@ end
 local levels = fb.fribidi_reorder_line(fb.FRIBIDI_FLAGS_ARABIC, pTempBidiTypes, nLineSize, 0, baseDirection,  pTempEmbeddingLevels, pTempVisualLine, pTempPositionLogicToVisual);
 
 --for i = 0, nLineSize-1 do
-  --print(string.format("%i => %i", i, fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, i)))
+  --print(string.format("%i ====> %i", i, fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, i)))
 --end
 local chunks = {}
 local chunkStart = 0
@@ -77,16 +77,45 @@ end
 -------------------- drawing ----------------
 
 local ft_library = ft.initFreeType()
-local ptSize      = 20.0;
+local ptSize      = 40.0;
 local device_hdpi = 100;
 local device_vdpi = 100;
-local width      = 500;
+local width      = 1000;
 local height     = 500;
 local fontPath = "fonts/arial.ttf"
 
 local ft_face = ft_library:newFace(fontPath)
 ft_face:setCharSize(ptSize*64.0, device_hdpi, device_vdpi)
-local hb_ft_font = hb.ftFontCreate(ft_face)
+local function createFontFromFile(path, index)
+  local inp = assert(io.open(path, "rb"))
+  local data = inp:read("*all")
+  io.close(inp)
+  local blob = hb.blobCreate(data, #data, hb.MemoryMode.Writable)
+  local face = hb.faceCreate(blob, index);
+  local font = hb.fontCreate(face);
+  hb.otFontSetFuncs(font);
+  return font
+end
+local hb_font = hb.ftFontCreate(ft_face)
+--hb.otFontSetFuncs(hb_font);
+--local hb_font = assert(createFontFromFile(fontPath, 0), "createFontFromFile failed")
+--local metrics = ft_face:deref().size.metrics
+--local x_scale  = math.tointeger(metrics.x_scale)
+--local y_scale  = math.tointeger(metrics.y_scale)
+--local units_per_EM = math.tointeger(ft_face:deref().units_per_EM)
+--local nXScale = (x_scale * units_per_EM + (1<<15)) >> 16
+--local nYScale = (y_scale * units_per_EM + (1<<15)) >> 16
+--hb_font:setScale(nXScale, nYScale)
+local charmap_arr = ft_face:getCharMapArray()
+for i = 1,#charmap_arr do
+  if (charmap_arr[i].platform_id == 0 and charmap_arr[i].encoding_id == 3) then
+    ft_face:setCharMap(charmap_arr[i])
+    break
+  elseif (charmap_arr[i].platform_id == 3 and charmap_arr[i].encoding_id == 1) then
+    ft_face:setCharMap(charmap_arr[i])
+    break
+  end
+end
 local cairo_ft_face = cairo.fontFaceCreateForFtFace(ft_face, 0)
 
 --TODO: work out u32_t type issues
@@ -94,29 +123,35 @@ local textArray = fb.new_Uint32Array(nLineSize)
 fb.memcpy_Uint32Array(textArray, text, #text)
 local buf = hb.bufferCreate()
 local x = 20.0
-local y = 20.0
+local y = 100.0
 local cairo_glyphs = cairo.newGlyphsArray(nLineSize)
 local c = 0
 local function chunkToCairo(chunk)
-  print(string.format("st=%i, l=%i, script=%s", chunk.start, chunk.length, chunk.script))
+  --print(string.format("st=%i, l=%i, script=%s", chunk.start, chunk.length, chunk.script))
   buf:clearContents()
-  buf:setScriptAndDirection(chunk.script)
+  buf:setScript(chunk.script)
+  buf:setDirection(hb.Direction.LTR)
+  --buf:setScriptAndDirection(chunk.script)
   buf:addUtf32(textArray, nLineSize, chunk.start, chunk.length)
-  buf:shape(hb_ft_font)
+  buf:shape(hb_font)
 
   local glyph_infos = buf:getGlyphInfos()
   local glyph_positions = buf:getGlyphPositions()
   for j = 1, #glyph_positions do
+    --print(string.format("x=%f, y=%f", x, y))
+    --print(string.format("    j=%i, v=%i", j-1, chunk.start + j - 1))
     local o = fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, chunk.start + j - 1)
     local i = o - chunk.start + 1
     local cairo_glyph = cairo.newGlyph()
     local position = glyph_positions[i]
     local info = glyph_infos[i]
     cairo_glyph.index = info.codepoint
-    cairo_glyph.x = x + ((position.x_offset)/64)
-    cairo_glyph.y = y + ((position.y_offset)/64)
-    x = x + ((position.x_advance)/64)
-    y = y - ((position.y_advance)/64)
+    cairo_glyph.x = x + (position.x_offset/64)
+    cairo_glyph.y = y - (position.y_offset/64)
+    print(string.format("cp=%i xo=%i xa=%i (lua)", info.codepoint,
+      math.tointeger(position.x_offset), math.tointeger(position.x_advance)))
+    x = x + (position.x_advance/64)
+    y = y - (position.y_advance/64)
     c = c + 1
     cairo_glyphs[c] = cairo_glyph
   end

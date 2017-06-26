@@ -1,4 +1,5 @@
 local hb = require("swig_hb")
+local hb_ot = require("swig_hb_ot")
 local hb_ft = require("swig_hb_ft")
 local hb_glib = require("swig_hb_glib")
 
@@ -82,15 +83,23 @@ local bufferCreate = function()
   return buf
 end
 
+local font_mt = {
+  __gc = function(self) hb.hb_font_destroy(self) end,
+  __index = {
+    setScale = function(self, nXScale, nYScale)
+      hb.hb_font_set_scale(self, nXScale, nYScale)
+    end,
+  }
+}
 local ftFontCreate = function(ft_face)
   local hb_ft_font = hb_ft.hb_ft_font_create_null_func(ft_face)
-  local mt = {
-    __gc = function(_)
-      hb.hb_font_destroy(hb_ft_font)
-    end
-  }
-  hb.setmetatable(hb_ft_font, mt)
+  hb.setmetatable(hb_ft_font, font_mt)
   return hb_ft_font
+end
+local fontCreate = function(face)
+  local hb_font = hb.hb_font_create(ft_face)
+  hb.setmetatable(hb_font, font_mt)
+  return hb_font
 end
 
 local default_funcs = hb.hb_unicode_funcs_get_default()
@@ -107,6 +116,26 @@ end
 --TODO: are there other script functions? worth making an object?
 local function getHorizontalDirection(char)
   return hb.hb_script_get_horizontal_direction(char)
+end
+local blob_mt = { __gc = function(self) hb.hb_blob_destroy(self) end,
+}
+local blobCreate = function(data, length, mode)
+  local blob = hb.hb_blob_create(data, length, mode, nil, nil)
+  hb.setmetatable(blob, blob_mt)
+  return blob
+end
+local face_mt = {
+  __gc = function(self) hb.hb_face_destroy(self) end,
+}
+local faceCreate = function(blob, index)
+  local face = hb.hb_face_create(blob, index)
+  hb.setmetatable(face, face_mt)
+  return face
+end
+
+-- attach as font method?
+local function otFontSetFuncs(font)
+  hb_ot.hb_ot_font_set_funcs(font)
 end
 
 local Direction = {
@@ -260,11 +289,23 @@ local Script = {
   Invalid = hb.HB_SCRIPT_INVALID,
 }
 
+local MemoryMode = {
+  Writable = hb.HB_MEMORY_MODE_WRITABLE,
+  Duplicate = hb.HB_MEMORY_MODE_DUPLICATE,
+  ReadOnly = hb.HB_MEMORY_MODE_READONLY,
+  ReadOnlyMayMakeWritable = hb.HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE,
+}
+
 return {
+  MemoryMode = MemoryMode,
   Direction = Direction,
   Script = Script,
   ftFontCreate = ftFontCreate,
+  fontCreate = fontCreate,
+  faceCreate = faceCreate,
   bufferCreate = bufferCreate,
+  blobCreate = blobCreate,
+  otFontSetFuncs = otFontSetFuncs,
   unicodeFuncsGetDefault = unicodeFuncsGetDefault,
   unicodeScript = unicodeScript,
 }

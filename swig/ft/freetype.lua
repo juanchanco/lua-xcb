@@ -10,6 +10,31 @@ local face_metatable = {
       --TODO what is the second param for?
       ft.FT_Set_Char_Size(self, 0, size, hdpi, vdpi)
     end,
+    --TODO: returns a status code
+    setCharMap = function(self, map)
+      ft.FT_Set_Charmap(self, map)
+    end,
+    getCharMapArray = function(self)
+      local ftf = ft.derefFaceRec(self)
+      local arr = {
+        charmaps = ftf.charmaps
+      }
+      -- NOTE: swig has same metatable for this and cairo_glyph_t
+      local mt = {}
+      mt.__len = function(_) return ftf.num_charmaps end
+      mt.__index = function(_, i)
+        return swig_freetype.FT_CharMapArray_getitem(ftf.charmaps, i-1)
+      end
+      mt.__newindex = function(_, i, map)
+        swig_freetype.FT_CharMapArray_setitem(ftf.charmaps, i-1, map)
+      end
+      setmetatable(arr, mt)
+      return arr
+    end,
+    --TODO better understanding of swig. 
+    deref = function(self)
+      return ft.derefFaceRec(self)
+    end
   }
 }
 
