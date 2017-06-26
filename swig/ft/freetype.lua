@@ -57,6 +57,11 @@ local initFreeType = function()
   return ft_library
 end
 
+local dumpChars = function(chars)
+  ft.dumpChars(chars, #chars)
+end
+
 return {
   initFreeType = initFreeType,
+  dumpChars = dumpChars,
 }

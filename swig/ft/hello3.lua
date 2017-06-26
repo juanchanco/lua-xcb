@@ -10,8 +10,9 @@ local text8 = "Ленивый рыжий кот شَدَّة latin العَرَ�
 
 local ic = assert(iconv.open("utf-32le", "utf-8"))
 local text = ic:iconv(text8)
-
 local nLineSize = #text/4
+local textArray = fb.new_Uint32Array(nLineSize)
+fb.memcpy_Uint32Array(textArray, text, #text)
 
 local pTempLogicalLine = fb.new_FriBidiCharArray(nLineSize)
 local pTempVisualLine = fb.new_FriBidiCharArray(nLineSize)
@@ -47,9 +48,9 @@ local levels = fb.fribidi_reorder_line(fb.FRIBIDI_FLAGS_ARABIC, pTempBidiTypes, 
 --end
 local chunks = {}
 local chunkStart = 0
-local currentScript = hb.unicodeScript(fb.FriBidiCharArray_getitem(pTempLogicalLine, chunkStart))
+local currentScript = hb.unicodeScript(fb.castInt32(fb.Uint32Array_getitem(textArray, chunkStart)))
 for j = 1,nLineSize-1 do
-  local script = hb.unicodeScript(fb.FriBidiCharArray_getitem(pTempLogicalLine, j))
+  local script = hb.unicodeScript(fb.castInt32(fb.Uint32Array_getitem(textArray, j)))
   if (script ~= currentScript and script ~= hb.Script.Inherited) then
       local chunk = {
         start = chunkStart,
@@ -62,7 +63,7 @@ for j = 1,nLineSize-1 do
       currentScript = script
   end
 end
-local currentSymbol = fb.FriBidiCharArray_getitem(pTempLogicalLine, chunkStart)
+local currentSymbol = fb.Uint32Array_getitem(textArray, chunkStart)
 if (chunkStart <= nLineSize) then
   local chunk = {
     start = chunkStart,
@@ -119,8 +120,6 @@ end
 local cairo_ft_face = cairo.fontFaceCreateForFtFace(ft_face, 0)
 
 --TODO: work out u32_t type issues
-local textArray = fb.new_Uint32Array(nLineSize)
-fb.memcpy_Uint32Array(textArray, text, #text)
 local buf = hb.bufferCreate()
 local x = 20.0
 local y = 100.0
@@ -129,19 +128,22 @@ local c = 0
 local function chunkToCairo(chunk)
   --print(string.format("st=%i, l=%i, script=%s", chunk.start, chunk.length, chunk.script))
   buf:clearContents()
-  buf:setScript(chunk.script)
-  buf:setDirection(hb.Direction.LTR)
-  --buf:setScriptAndDirection(chunk.script)
+  --buf:setScript(chunk.script)
+  --buf:setDirection(hb.Direction.LTR)
+  buf:setScriptAndDirection(chunk.script)
   buf:addUtf32(textArray, nLineSize, chunk.start, chunk.length)
   buf:shape(hb_font)
 
   local glyph_infos = buf:getGlyphInfos()
   local glyph_positions = buf:getGlyphPositions()
+    --print(string.format("l=%i x=%i", chunk.length, #glyph_positions))
   for j = 1, #glyph_positions do
     --print(string.format("x=%f, y=%f", x, y))
     --print(string.format("    j=%i, v=%i", j-1, chunk.start + j - 1))
-    local o = fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, chunk.start + j - 1)
-    local i = o - chunk.start + 1
+    --local o = fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, chunk.start + j - 1)
+    --local i = o - chunk.start + 1
+    i = j
+    --print(string.format("o=%i j=%i x=%i i=%i", o, j, chunk.start+j-1, i))
     local cairo_glyph = cairo.newGlyph()
     local position = glyph_positions[i]
     local info = glyph_infos[i]
@@ -163,42 +165,47 @@ end
 
 ------------------------- display -----------------------
 
---local conn = xcb.connect()
---local screen = conn:getSetup():setupRootsIterator().data
+local conn = xcb.connect()
+local screen = conn:getSetup():setupRootsIterator().data
 
---local window = conn:createWindow({
-  --parent=screen.root,
-  --visual=screen.root_visual,
-  --x=20, y=20, w=width, h=height, border=10,
-  --class = xcb.WindowClass.InputOutput,
-  --mask=xcb.CW.BackPixel | xcb.CW.EventMask,
-  --value0=screen.black_pixel,
-  --value1=xcb.EventMask.Exposure | xcb.EventMask.KeyPress
---})
---conn:mapWindow(window)
---conn:flush()
---local visual = cairo.findVisual(conn, screen.root_visual)
---conn:flush()
+local window = conn:createWindow({
+  parent=screen.root,
+  visual=screen.root_visual,
+  x=20, y=20, w=width, h=height, border=10,
+  class = xcb.WindowClass.InputOutput,
+  mask=xcb.CW.BackPixel | xcb.CW.EventMask,
+  value0=screen.black_pixel,
+  value1=xcb.EventMask.Exposure | xcb.EventMask.KeyPress
+})
+conn:mapWindow(window)
+conn:flush()
+local visual = cairo.findVisual(conn, screen.root_visual)
+conn:flush()
 
---local surface = cairo.xcbSurfaceCreate(conn, window.id, visual, width, height)
---local cr = surface:cairoCreate()
---cr:setFontSize(ptSize)
---cr:setFontFace(cairo_ft_face)
+local surface = cairo.xcbSurfaceCreate(conn, window.id, visual, width, height)
+local cr = surface:cairoCreate()
+cr:setFontSize(ptSize)
+cr:setFontFace(cairo_ft_face)
 
---local e = conn:waitForEvent()
---while (e) do
-  --local response_type = e.response_type
-  --if (response_type == xcb.EventType.Expose) then
-    --cr:setSourceRgb(0.0, 0.0, 0.0)
-    --cr:paint()
-    --cr:setSourceRgba(0.5, 0.5, 0.5, 1.0)
-    --cr:showGlyphs(cairo_glyphs)
-    --surface:flush()
-    --conn:flush()
-  --elseif (response_type == xcb.EventType.KeyPress) then
-    --break
-  --end
-  --e = conn:waitForEvent()
+local e = conn:waitForEvent()
+while (e) do
+  local response_type = e.response_type
+  if (response_type == xcb.EventType.Expose) then
+    cr:setSourceRgb(0.0, 0.0, 0.0)
+    cr:paint()
+    cr:setSourceRgba(0.5, 0.5, 0.5, 1.0)
+    cr:showGlyphs(cairo_glyphs)
+    surface:flush()
+    conn:flush()
+  elseif (response_type == xcb.EventType.KeyPress) then
+    break
+  end
+  e = conn:waitForEvent()
+end
+conn:disconnect()
+
+--for i = 0, nLineSize-1 do
+  --print(math.tointeger(fb.castInt32(fb.Uint32Array_getitem(textArray, i))))
 --end
---conn:disconnect()
-
+--print("=====")
+--ft.dumpChars(text)

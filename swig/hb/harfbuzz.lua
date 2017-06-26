@@ -102,7 +102,7 @@ local fontCreate = function(face)
   return hb_font
 end
 
-local default_funcs = hb.hb_unicode_funcs_get_default()
+local default_funcs = hb_glib.hb_glib_get_unicode_funcs()
 local function unicodeFuncsGetDefault()
   return default_funcs
 end

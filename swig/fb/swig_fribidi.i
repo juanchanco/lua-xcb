@@ -33,6 +33,7 @@ void memcpy_FriBidiJoiningTypeArray(FriBidiArabicProp *dest, FriBidiJoiningType 
     l = l * sizeof(FriBidiJoiningType);
     memcpy(dest,src,l);
 }
+int castInt32(uint32_t i) { return (int) i; }
 %}
 %native(setmetatable) int userdata_set_metatable(lua_State *L);
 %native(alt_Uint32Array_getitem) int _alt_Uint32Array_getitem(lua_State *L);

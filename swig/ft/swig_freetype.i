@@ -22,6 +22,13 @@
     return  *face;
   }
   FT_SizeRec* asSizeRec(FT_Size* size) { return (FT_SizeRec*) size; }
+
+  void dumpChars(char* chars, int l) {
+    int i = 0;
+    for (i = 0; i < l/4; i++) {
+      printf("%i\n", ((int*) chars)[i]);
+    }
+  }
 %}
 %native(setmetatable) int userdata_set_metatable(lua_State *L);
 %{
