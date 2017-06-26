@@ -1,4 +1,7 @@
 local ft = require("swig_freetype")
+local log_console = require"log4l.console"
+local logger = log_console()
+
 
 --TODO: is there a way to tell swig not to free() this?
 local FT_FaceRec_mt = getmetatable(ft.FT_FaceRec)
@@ -23,15 +26,15 @@ local face_metatable = {
       local mt = {}
       mt.__len = function(_) return ftf.num_charmaps end
       mt.__index = function(_, i)
-        return swig_freetype.FT_CharMapArray_getitem(ftf.charmaps, i-1)
+        return ft.FT_CharMapArray_getitem(ftf.charmaps, i-1)
       end
       mt.__newindex = function(_, i, map)
-        swig_freetype.FT_CharMapArray_setitem(ftf.charmaps, i-1, map)
+        ft.FT_CharMapArray_setitem(ftf.charmaps, i-1, map)
       end
       setmetatable(arr, mt)
       return arr
     end,
-    --TODO better understanding of swig. 
+    --TODO better understanding of swig.
     deref = function(self)
       return ft.derefFaceRec(self)
     end
@@ -42,7 +45,10 @@ local initFreeType = function()
   --TODO: check result code
   local _,ft_library = ft.FT_Init_FreeType()
   local mt = {
-    __gc = function(_) ft.FT_Done_FreeType(ft_library) end,
+    __gc = function(_)
+      logger:debug("ft_library __gc called")
+      ft.FT_Done_FreeType(ft_library)
+    end,
     __index = {
       newFace = function(self, path)
         --TODO what is the last param for?
