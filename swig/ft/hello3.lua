@@ -123,7 +123,7 @@ local function chunkToCairo(chunk)
     --print(string.format("    j=%i, v=%i", j-1, chunk.start + j - 1))
     --local o = fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, chunk.start + j - 1)
     --local i = o - chunk.start + 1
-    i = j
+    local i = j
     --print(string.format("o=%i j=%i x=%i i=%i", o, j, chunk.start+j-1, i))
     local cairo_glyph = cairo.newGlyph()
     local position = glyph_positions[i]
@@ -135,8 +135,8 @@ local function chunkToCairo(chunk)
       (position.x_offset), (position.x_advance)))
     x = x + (position.x_advance//64)
     y = y - (position.y_advance//64)
-    --c = c + 1
-    cairo_glyphs[j] = cairo_glyph
+    c = c + 1
+    cairo_glyphs[c] = cairo_glyph
   end
 end
 for _,chunk in ipairs(chunks) do
@@ -146,42 +146,42 @@ end
 
 ------------------------- display -----------------------
 
---local conn = xcb.connect()
---local screen = conn:getSetup():setupRootsIterator().data
+local conn = xcb.connect()
+local screen = conn:getSetup():setupRootsIterator().data
 
---local window = conn:createWindow({
-  --parent=screen.root,
-  --visual=screen.root_visual,
-  --x=20, y=20, w=width, h=height, border=10,
-  --class = xcb.WindowClass.InputOutput,
-  --mask=xcb.CW.BackPixel | xcb.CW.EventMask,
-  --value0=screen.black_pixel,
-  --value1=xcb.EventMask.Exposure | xcb.EventMask.KeyPress
---})
---conn:mapWindow(window)
---conn:flush()
---local visual = cairo.findVisual(conn, screen.root_visual)
---conn:flush()
+local window = conn:createWindow({
+  parent=screen.root,
+  visual=screen.root_visual,
+  x=20, y=20, w=width, h=height, border=10,
+  class = xcb.WindowClass.InputOutput,
+  mask=xcb.CW.BackPixel | xcb.CW.EventMask,
+  value0=screen.black_pixel,
+  value1=xcb.EventMask.Exposure | xcb.EventMask.KeyPress
+})
+conn:mapWindow(window)
+conn:flush()
+local visual = cairo.findVisual(conn, screen.root_visual)
+conn:flush()
 
---local cairo_ft_face = cairo.fontFaceCreateForFtFace(ft_face, 0)
---local surface = cairo.xcbSurfaceCreate(conn, window.id, visual, width, height)
---local cr = surface:cairoCreate()
---cr:setFontSize(ptSize)
---cr:setFontFace(cairo_ft_face)
+local cairo_ft_face = cairo.fontFaceCreateForFtFace(ft_face, 0)
+local surface = cairo.xcbSurfaceCreate(conn, window.id, visual, width, height)
+local cr = surface:cairoCreate()
+cr:setFontSize(ptSize)
+cr:setFontFace(cairo_ft_face)
 
---local e = conn:waitForEvent()
---while (e) do
-  --local response_type = e.response_type
-  --if (response_type == xcb.EventType.Expose) then
-    --cr:setSourceRgb(0.0, 0.0, 0.0)
-    --cr:paint()
-    --cr:setSourceRgba(0.5, 0.5, 0.5, 1.0)
-    --cr:showGlyphs(cairo_glyphs)
-    --surface:flush()
-    --conn:flush()
-  --elseif (response_type == xcb.EventType.KeyPress) then
-    --break
-  --end
-  --e = conn:waitForEvent()
---end
---conn:disconnect()
+local e = conn:waitForEvent()
+while (e) do
+  local response_type = e.response_type
+  if (response_type == xcb.EventType.Expose) then
+    cr:setSourceRgb(0.0, 0.0, 0.0)
+    cr:paint()
+    cr:setSourceRgba(0.5, 0.5, 0.5, 1.0)
+    cr:showGlyphs(cairo_glyphs)
+    surface:flush()
+    conn:flush()
+  elseif (response_type == xcb.EventType.KeyPress) then
+    break
+  end
+  e = conn:waitForEvent()
+end
+conn:disconnect()
