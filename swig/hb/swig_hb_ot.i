@@ -10,6 +10,11 @@
 /* torturous sequences of typedefs */
 %import "../ft/freetype.hh"
 %include <hb-ot-font.h>
+%include <hb-ot-layout.h>
+%include <hb-ot-math.h>
+%include <hb-ot-tag.h>
+%include <hb-ot-shape.h>
+%include <hb-ot-var.h>
 /*%inline %{
 hb_face_t * hb_ft_face_create_null_func (FT_Face ft_face) {
     return hb_ft_face_create (ft_face, NULL);

@@ -87,42 +87,23 @@ local fontPath = "fonts/arial.ttf"
 
 local ft_face = ft_library:newFace(fontPath)
 ft_face:setCharSize(ptSize*64.0, device_hdpi, device_vdpi)
-local function createFontFromFile(path, index)
-  local inp = assert(io.open(path, "rb"))
-  local data = inp:read("*all")
-  io.close(inp)
-  local blob = hb.blobCreate(data, #data, hb.MemoryMode.Writable)
-  local face = hb.faceCreate(blob, index);
-  local font = hb.fontCreate(face);
-  hb.otFontSetFuncs(font);
-  return font
-end
 local hb_font = hb.ftFontCreate(ft_face)
---hb.otFontSetFuncs(hb_font);
---local hb_font = assert(createFontFromFile(fontPath, 0), "createFontFromFile failed")
---local metrics = ft_face:deref().size.metrics
---local x_scale  = math.tointeger(metrics.x_scale)
---local y_scale  = math.tointeger(metrics.y_scale)
---local units_per_EM = math.tointeger(ft_face:deref().units_per_EM)
---local nXScale = (x_scale * units_per_EM + (1<<15)) >> 16
---local nYScale = (y_scale * units_per_EM + (1<<15)) >> 16
---hb_font:setScale(nXScale, nYScale)
-local charmap_arr = ft_face:getCharMapArray()
-for i = 1,#charmap_arr do
-  if (charmap_arr[i].platform_id == 0 and charmap_arr[i].encoding_id == 3) then
-    ft_face:setCharMap(charmap_arr[i])
-    break
-  elseif (charmap_arr[i].platform_id == 3 and charmap_arr[i].encoding_id == 1) then
-    ft_face:setCharMap(charmap_arr[i])
-    break
-  end
-end
-local cairo_ft_face = cairo.fontFaceCreateForFtFace(ft_face, 0)
+--hb.otFontSetFuncs(hb_font)
+--local charmap_arr = ft_face:getCharMapArray()
+--for i = 1,#charmap_arr do
+  --if (charmap_arr[i].platform_id == 0 and charmap_arr[i].encoding_id == 3) then
+    --ft_face:setCharMap(charmap_arr[i])
+    --break
+  --elseif (charmap_arr[i].platform_id == 3 and charmap_arr[i].encoding_id == 1) then
+    --ft_face:setCharMap(charmap_arr[i])
+    --break
+  --end
+--end
 
 --TODO: work out u32_t type issues
 local buf = hb.bufferCreate()
-local x = 20.0
-local y = 100.0
+local x = 20
+local y = 100
 local cairo_glyphs = cairo.newGlyphsArray(nLineSize)
 local c = 0
 local function chunkToCairo(chunk)
@@ -138,7 +119,7 @@ local function chunkToCairo(chunk)
   local glyph_positions = buf:getGlyphPositions()
     --print(string.format("l=%i x=%i", chunk.length, #glyph_positions))
   for j = 1, #glyph_positions do
-    --print(string.format("x=%f, y=%f", x, y))
+    --print(string.format("x=%i, y=%i", x, y))
     --print(string.format("    j=%i, v=%i", j-1, chunk.start + j - 1))
     --local o = fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, chunk.start + j - 1)
     --local i = o - chunk.start + 1
@@ -148,14 +129,14 @@ local function chunkToCairo(chunk)
     local position = glyph_positions[i]
     local info = glyph_infos[i]
     cairo_glyph.index = info.codepoint
-    cairo_glyph.x = x + (position.x_offset/64)
-    cairo_glyph.y = y - (position.y_offset/64)
+    cairo_glyph.x = x + (position.x_offset//64)
+    cairo_glyph.y = y - (position.y_offset//64)
     print(string.format("cp=%i xo=%i xa=%i (lua)", info.codepoint,
-      math.tointeger(position.x_offset), math.tointeger(position.x_advance)))
-    x = x + (position.x_advance/64)
-    y = y - (position.y_advance/64)
-    c = c + 1
-    cairo_glyphs[c] = cairo_glyph
+      (position.x_offset), (position.x_advance)))
+    x = x + (position.x_advance//64)
+    y = y - (position.y_advance//64)
+    --c = c + 1
+    cairo_glyphs[j] = cairo_glyph
   end
 end
 for _,chunk in ipairs(chunks) do
@@ -165,47 +146,42 @@ end
 
 ------------------------- display -----------------------
 
-local conn = xcb.connect()
-local screen = conn:getSetup():setupRootsIterator().data
+--local conn = xcb.connect()
+--local screen = conn:getSetup():setupRootsIterator().data
 
-local window = conn:createWindow({
-  parent=screen.root,
-  visual=screen.root_visual,
-  x=20, y=20, w=width, h=height, border=10,
-  class = xcb.WindowClass.InputOutput,
-  mask=xcb.CW.BackPixel | xcb.CW.EventMask,
-  value0=screen.black_pixel,
-  value1=xcb.EventMask.Exposure | xcb.EventMask.KeyPress
-})
-conn:mapWindow(window)
-conn:flush()
-local visual = cairo.findVisual(conn, screen.root_visual)
-conn:flush()
+--local window = conn:createWindow({
+  --parent=screen.root,
+  --visual=screen.root_visual,
+  --x=20, y=20, w=width, h=height, border=10,
+  --class = xcb.WindowClass.InputOutput,
+  --mask=xcb.CW.BackPixel | xcb.CW.EventMask,
+  --value0=screen.black_pixel,
+  --value1=xcb.EventMask.Exposure | xcb.EventMask.KeyPress
+--})
+--conn:mapWindow(window)
+--conn:flush()
+--local visual = cairo.findVisual(conn, screen.root_visual)
+--conn:flush()
 
-local surface = cairo.xcbSurfaceCreate(conn, window.id, visual, width, height)
-local cr = surface:cairoCreate()
-cr:setFontSize(ptSize)
-cr:setFontFace(cairo_ft_face)
+--local cairo_ft_face = cairo.fontFaceCreateForFtFace(ft_face, 0)
+--local surface = cairo.xcbSurfaceCreate(conn, window.id, visual, width, height)
+--local cr = surface:cairoCreate()
+--cr:setFontSize(ptSize)
+--cr:setFontFace(cairo_ft_face)
 
-local e = conn:waitForEvent()
-while (e) do
-  local response_type = e.response_type
-  if (response_type == xcb.EventType.Expose) then
-    cr:setSourceRgb(0.0, 0.0, 0.0)
-    cr:paint()
-    cr:setSourceRgba(0.5, 0.5, 0.5, 1.0)
-    cr:showGlyphs(cairo_glyphs)
-    surface:flush()
-    conn:flush()
-  elseif (response_type == xcb.EventType.KeyPress) then
-    break
-  end
-  e = conn:waitForEvent()
-end
-conn:disconnect()
-
---for i = 0, nLineSize-1 do
-  --print(math.tointeger(fb.castInt32(fb.Uint32Array_getitem(textArray, i))))
+--local e = conn:waitForEvent()
+--while (e) do
+  --local response_type = e.response_type
+  --if (response_type == xcb.EventType.Expose) then
+    --cr:setSourceRgb(0.0, 0.0, 0.0)
+    --cr:paint()
+    --cr:setSourceRgba(0.5, 0.5, 0.5, 1.0)
+    --cr:showGlyphs(cairo_glyphs)
+    --surface:flush()
+    --conn:flush()
+  --elseif (response_type == xcb.EventType.KeyPress) then
+    --break
+  --end
+  --e = conn:waitForEvent()
 --end
---print("=====")
---ft.dumpChars(text)
+--conn:disconnect()
