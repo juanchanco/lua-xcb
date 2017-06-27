@@ -439,12 +439,12 @@ local font_mt = {
   }
 }
 local ftFontCreate = function(ft_face)
-  local hb_ft_font = hb_ft.hb_ft_font_create_null_func(ft_face)
+  local hb_ft_font = hb_ft.hb_ft_font_create(ft_face, nil)
   hb.setmetatable(hb_ft_font, font_mt)
   return hb_ft_font
 end
 local fontCreate = function(face)
-  local hb_font = hb.hb_font_create(ft_face)
+  local hb_font = hb.hb_font_create(face)
   hb.setmetatable(hb_font, font_mt)
   return hb_font
 end
@@ -504,4 +504,5 @@ return {
   otFontSetFuncs = otFontSetFuncs,
   unicodeFuncsGetDefault = unicodeFuncsGetDefault,
   unicodeScript = unicodeScript,
+  getHorizontalDirection = getHorizontalDirection,
 }
