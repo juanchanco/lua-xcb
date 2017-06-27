@@ -4,12 +4,23 @@ local hb_ft = require("swig_hb_ft")
 local hb_glib = require("swig_hb_glib")
 
 local buffer_mt = {
-  __gc = function(self) hb.hb_buffer_destroy(self) end,
+  __gc = function(self)
+      hb.hb_buffer_destroy(self)
+    end,
   __len = function(self) return hb.hb_buffer_get_length(self) end,
-  __tostring = function(_) return "Harfbuzz Buffer" end,
+  __tostring = function(_)
+    -- TODO: string.format with length etc.
+      return "Harfbuzz Buffer"
+    end,
   __index = {
+    setClusterLevel = function(self, level)
+      hb.hb_buffer_set_cluster_level(self, level)
+    end,
     setUnicodeFuncs = function(self, funcs)
       hb.hb_buffer_set_unicode_funcs(self, funcs)
+    end,
+    reverse = function(self)
+      hb.hb_buffer_reverse(self)
     end,
     clearContents = function(self)
       hb.hb_buffer_clear_contents(self)
@@ -79,7 +90,9 @@ local buffer_mt = {
 local bufferCreate = function()
   local buf = hb.hb_buffer_create()
   hb.setmetatable(buf, buffer_mt)
+  --TODO: maybe leave this up the the "higher level" api
   hb.hb_buffer_set_unicode_funcs(buf, hb_glib.hb_glib_get_unicode_funcs())
+  hb.hb_buffer_set_cluster_level(buf, hb.HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS)
   return buf
 end
 
@@ -295,8 +308,15 @@ local MemoryMode = {
   ReadOnly = hb.HB_MEMORY_MODE_READONLY,
   ReadOnlyMayMakeWritable = hb.HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE,
 }
+local ClusterLevel = {
+  MonotoneGraphemes = hb.HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES,
+  MonotoneCharacters = hb.HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS,
+  Characters = hb.HB_BUFFER_CLUSTER_LEVEL_CHARACTERS,
+  Default = hb.HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
+}
 
 return {
+  ClusterLevel = ClusterLevel,
   MemoryMode = MemoryMode,
   Direction = Direction,
   Script = Script,
