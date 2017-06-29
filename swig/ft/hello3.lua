@@ -79,8 +79,8 @@ end
 
 local ft_library = ft.initFreeType()
 local ptSize      = 40.0;
-local device_hdpi = 100;
-local device_vdpi = 100;
+local device_hdpi = 72;
+local device_vdpi = 72;
 local width      = 1000;
 local height     = 500;
 local fontPath = "fonts/arial.ttf"
