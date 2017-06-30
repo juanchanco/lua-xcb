@@ -6,7 +6,8 @@ local cairo = require("cairo")
 local ft = require("freetype")
 local xcb = require("xcb")
 
-local text8 = "Ленивый рыжий кот شَدَّة latin العَرَبِية";
+local text8 = "fluffy souffle fits if"
+--local text8 = "Ленивый рыжий кот شَدَّة latin العَرَبِية";
 
 local ic = assert(iconv.open("utf-32le", "utf-8"))
 local text = ic:iconv(text8)
@@ -29,7 +30,7 @@ local pTempArProps = fb.new_FriBidiArabicPropArray(nLineSize)
 fb.memcpy_FriBidiCharArray(pTempLogicalLine, text, #text)
 fb.fribidi_get_bidi_types(pTempLogicalLine, nLineSize, pTempBidiTypes);
 
-local resolveParDir, baseDirection = fb.get_par_embedding_levels_ref(pTempBidiTypes, nLineSize, fb.FRIBIDI_PAR_LTR, pTempEmbeddingLevels)
+local _, baseDirection = fb.get_par_embedding_levels_ref(pTempBidiTypes, nLineSize, fb.FRIBIDI_PAR_LTR, pTempEmbeddingLevels)
 fb.fribidi_get_joining_types(pTempLogicalLine, nLineSize, pTempJtypes);
 fb.memcpy_FriBidiJoiningTypeArray(pTempArProps, pTempJtypes, nLineSize);
 
@@ -41,7 +42,7 @@ for i = 0, nLineSize-1 do
   fb.FriBidiStrIndexArray_setitem(pTempPositionLogicToVisual, i, i)
 end
 
-local levels = fb.fribidi_reorder_line(fb.FRIBIDI_FLAGS_ARABIC, pTempBidiTypes, nLineSize, 0, baseDirection,  pTempEmbeddingLevels, pTempVisualLine, pTempPositionLogicToVisual);
+local _ = fb.fribidi_reorder_line(fb.FRIBIDI_FLAGS_ARABIC, pTempBidiTypes, nLineSize, 0, baseDirection,  pTempEmbeddingLevels, pTempVisualLine, pTempPositionLogicToVisual);
 
 --for i = 0, nLineSize-1 do
   --print(string.format("%i ====> %i", i, fb.FriBidiStrIndexArray_getitem(pTempPositionLogicToVisual, i)))
@@ -58,12 +59,12 @@ for j = 1,nLineSize-1 do
         script = currentScript,
       }
       table.insert(chunks,chunk)
-      
+
       chunkStart = j
       currentScript = script
   end
 end
-local currentSymbol = fb.Uint32Array_getitem(textArray, chunkStart)
+local _ = fb.Uint32Array_getitem(textArray, chunkStart)
 if (chunkStart <= nLineSize) then
   local chunk = {
     start = chunkStart,

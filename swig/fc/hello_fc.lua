@@ -4,7 +4,7 @@ print(result)
 local config = fc.FcConfigGetCurrent();
 fc.FcConfigSetRescanInterval(config, 0);
 local pat = fc.FcPatternCreate();
-local os = fc.FcObjectSetBuild4 (fc.FC_FAMILY, fc.FC_STYLE, fc.FC_LANG, fc.FC_FILE);
+local os = fc.FcObjectSetBuild3(fc.FC_FAMILY, fc.FC_STYLE, fc.FC_FILE);
 local fs = fc.FcFontList(config, pat, os);
 print(string.format("Total fonts: %s", fs.nfont))
 for i = 0, (fs.nfont-1) do
