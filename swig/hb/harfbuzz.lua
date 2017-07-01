@@ -412,9 +412,12 @@ local buffer_mt = {
       -- GCed before glyph_positions?
       return glyph_positions
     end,
+    normalizeGlyphs = function(self)
+      hb.hb_normalize_glyphs(self)
+    end,
     shape = function(self, font)
       -- TODO: what are the other params for?
-      hb.hb_shape(font, self, nil, 0);
+      hb.hb_shape(font, self, nil, 0)
     end,
   },
 }
