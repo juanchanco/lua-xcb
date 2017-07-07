@@ -29,8 +29,8 @@
 }
 %import <unicode/platform.h>
 %import <unicode/umachine.h>
-%include <unicode/utypes.h>
+%import <unicode/utypes.h>
 %import <unicode/uloc.h>
 %import <unicode/localpointer.h>
-%include <unicode/utext.h>
+%import <unicode/utext.h>
 %include <unicode/ubrk.h>
