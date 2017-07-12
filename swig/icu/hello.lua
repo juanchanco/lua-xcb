@@ -1,7 +1,8 @@
+require "std.strict"
 local Icu = require "swig_icu"
 local Ubrk = require "swig_icu_ubrk"
 
-local text8 = "Ленивый  рыжий кот شَدَّة latin العَرَبِية";
+local text8 = "Ленивый  рыжий кот شَدَّة. latin العَرَبِية";
 
 local text = Icu.utext_openUTF8(nil, text8, #text8, 0)
 --local text = ""
