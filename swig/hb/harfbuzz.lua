@@ -419,6 +419,10 @@ local buffer_mt = {
       -- TODO: what are the other params for?
       hb.hb_shape(font, self, nil, 0)
     end,
+    shapeFull = function(self, font, features)
+      -- TODO: what are the other params for?
+      hb.hb_shape_full(font, self, nil, 0, nil)
+    end,
   },
 }
 local bufferCreate = function()

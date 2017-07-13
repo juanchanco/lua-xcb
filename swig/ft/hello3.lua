@@ -84,7 +84,8 @@ local device_hdpi = 72;
 local device_vdpi = 72;
 local width      = 1000;
 local height     = 500;
-local fontPath = "fonts/arial.ttf"
+--local fontPath = "fonts/arial.ttf"
+local fontPath = "fonts/DejaVuSerif.ttf"
 
 local ft_face = ft_library:newFace(fontPath)
 ft_face:setCharSize(ptSize*64.0, device_hdpi, device_vdpi)
@@ -114,7 +115,7 @@ local function chunkToCairo(chunk)
   --buf:setDirection(hb.Direction.LTR)
   buf:setScriptAndDirection(chunk.script)
   buf:addUtf32(textArray, nLineSize, chunk.start, chunk.length)
-  buf:shape(hb_font)
+  buf:shapeFull(hb_font)
 
   local glyph_infos = buf:getGlyphInfos()
   local glyph_positions = buf:getGlyphPositions()
